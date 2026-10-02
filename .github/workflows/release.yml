@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # One version ships everything: both images and the chart carry the tag.
+  images:
+    name: Image
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ncaleague-${{ matrix.app }}/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague-${{ matrix.app }}:${{ github.ref_name }}
+
+  chart:
+    name: Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
+      - name: Package
+        run: |
+          helm registry login ${{ env.REGISTRY }} --username "$GITHUB_ACTOR" --password-stdin <<<"$GITHUB_TOKEN"
+          helm package chart --version "${GITHUB_REF_NAME#v}" --app-version "$GITHUB_REF_NAME"
+          helm push ncaleague-"${GITHUB_REF_NAME#v}".tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  release:
+    name: GitHub release
+    needs: [images, chart]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true

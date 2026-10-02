@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ncaleague.fullname" . }}-frontend
+  labels:
+    {{- include "ncaleague.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "ncaleague.labels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: frontend
+          image: {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Chart.AppVersion }}
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ncaleague.fullname" . }}-frontend
+  labels:
+    {{- include "ncaleague.labels" . | nindent 4 }}
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":pinAllExceptPeerDependencies",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigestsToSemver"
+  ],
+  "timezone": "Europe/Zurich",
+  "schedule": ["* 0-5 1,15 * *"],
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-5 1,15 * *"]
+  },
+  "packageRules": [
+    {
+      "description": "mise.toml and the backend image must agree.",
+      "matchDepNames": ["bun", "oven/bun"],
+      "groupName": "Bun"
+    },
+    {
+      "description": "mise.toml and the frontend image must agree.",
+      "matchDepNames": ["node"],
+      "groupName": "Node.js"
+    }
+  ]
+}

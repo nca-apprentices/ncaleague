@@ -1,0 +1,34 @@
+# Secrets for pulling the images, such as [{ name: ghcr }].
+imagePullSecrets: []
+
+# Such as prod, so the pods schedule ahead of lower environments.
+priorityClassName: ""
+
+backend:
+  image:
+    repository: ghcr.io/nca-apprentices/ncaleague-backend
+    tag: ""
+  resources:
+    requests: { cpu: 50m, memory: 96Mi }
+    limits: { memory: 256Mi }
+
+frontend:
+  image:
+    repository: ghcr.io/nca-apprentices/ncaleague-frontend
+    tag: ""
+  resources:
+    requests: { cpu: 10m, memory: 16Mi }
+    limits: { memory: 64Mi }
+
+# The CloudNativePG Cluster the backend uses. The operator writes its
+# credentials to the Secret <cluster>-app and its CA to <cluster>-ca.
+database:
+  cluster: ncaleague-db
+
+ingress:
+  enabled: true
+  className: traefik
+  host: ncaleague.example.com
+  tls:
+    enabled: true
+    secretName: ncaleague-tls

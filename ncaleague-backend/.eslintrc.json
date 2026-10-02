@@ -1,0 +1,13 @@
+{
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "no-relative-import-paths"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/explicit-function-return-type": "warn",
+    "prefer-arrow-callback": "warn",
+    "prefer-const": "warn",
+    "no-relative-import-paths/no-relative-import-paths": "warn"
+  },
+  "ignorePatterns": ["**/target/**"]
+}

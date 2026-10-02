@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "eamodio.gitlens",
+    "chakrounanas.turbo-console-log",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

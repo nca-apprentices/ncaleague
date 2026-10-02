@@ -1,0 +1,64 @@
+name: CI
+
+# Nothing here deploys: the infra repository pins a released chart version.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+
+jobs:
+  # Both apps import the types the backend generates from api/openapi.yaml.
+  app:
+    name: Lint, test, and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+      - name: Backend
+        working-directory: ncaleague-backend
+        run: |
+          bun install --frozen-lockfile
+          bun run models
+          bun run lint
+          bun test
+          bun run build
+      - name: Frontend
+        working-directory: ncaleague-frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+
+  chart:
+    name: Chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: helm
+      - run: helm lint chart
+
+  images:
+    name: Image
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ncaleague-${{ matrix.app }}/Dockerfile
+          push: false

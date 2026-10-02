@@ -1,0 +1,8 @@
+# TLS ends at the ingress, so Caddy serves plain HTTP. A path that isn't a file
+# is a client-side route and gets index.html.
+:80 {
+	root * /srv
+	encode
+	try_files {path} /index.html
+	file_server
+}

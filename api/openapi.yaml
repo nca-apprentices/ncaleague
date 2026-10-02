@@ -1,0 +1,386 @@
+openapi: 3.1.0
+info:
+  title: NCA League API
+  description: 'API for managing players, matches, and goals in the NCA League.'
+  version: '1.0'
+servers:
+  - url: 'http://localhost:5173'
+  - url: 'https://ncaleague.app'
+  - url: 'https://ncaleague-dev.nca-apprentices.dev'
+paths:
+  /matches:
+    post:
+      summary: Create match
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMatch'
+      responses:
+        '201':
+          description: Created match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+    get:
+      summary: Get all matches and winning teams for /games table
+      responses:
+        '200':
+          description: An array of matches and winning teams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Match'
+  '/matches/:id':
+    get:
+      summary: Get match details
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A match object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+    delete:
+      summary: Deleta a match
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Match deleted
+        '500':
+          description: Error while deleting match
+  '/matches/:id/goals':
+    post:
+      summary: Register goal
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: scoringPlayer
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                time:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Created goal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+    get:
+      summary: Get all goals of match
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: An array of goals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+  '/matches/:id/goals/undo':
+    post:
+      summary: Undo goal
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Undid goal
+        '200':
+          description: Undid goal and returned to the last match
+        '403':
+          description: Error while undoing the goal
+  '/matches/live':
+    get:
+      summary: Get all running matches
+      responses:
+        '200':
+          description: An array of matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RunningMatch'
+  /players:
+    post:
+      summary: Create player
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPlayer'
+      responses:
+        '204':
+          description: Created player
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+    get:
+      summary: Get all players for hints on new game page
+      responses:
+        '200':
+          description: An array of players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+  /players/ranking:
+    post:
+      summary: Get all players and their winrates
+      responses:
+        '200':
+          description: An array of players with winrates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+  /games/:gameId/summary:
+    get:
+      summary: Get results of the matches of a game after it ends
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: All matches of a game
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Match'
+        '404':
+          description: Error while fetching matches, empty body
+components:
+  schemas:
+    Player:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    NewMatch:
+      type: object
+      required:
+        - location
+        - status
+        - mode
+        - id
+        - gameId
+        - startDate
+        - blueOffensive
+        - blueDefensive
+        - redOffensive
+        - redDefensive
+      properties:
+        location:
+          type: string
+        status:
+          type: string
+          enum: [live, done]
+        mode:
+          type: string
+        winningTeam:
+          type: string
+          enum: [blue, red]
+        id:
+          type: string
+        gameId:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        blueOffensive:
+          type: string
+        blueDefensive:
+          type: string
+        redOffensive:
+          type: string
+        redDefensive:
+          type: string
+    Match:
+      type: object
+      required:
+        - location
+        - status
+        - mode
+        - id
+        - gameId
+        - startDate
+        - blueOffensive
+        - blueDefensive
+        - redOffensive
+        - redDefensive
+      properties:
+        location:
+          type: string
+        status:
+          type: string
+          enum: [live, done]
+        mode:
+          type: string
+        winningTeam:
+          type: string
+          enum: [blue, red]
+        id:
+          type: string
+        gameId:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        blueOffensive:
+          type: string
+        blueDefensive:
+          type: string
+        redOffensive:
+          type: string
+        redDefensive:
+          type: string
+    RunningMatch:
+      type: object
+      required:
+        - location
+        - status
+        - mode
+        - id
+        - gameId
+        - players
+        - totalMatches
+        - matchOfGame
+        - redScore
+        - blueScore
+      properties:
+        id:
+          type: string
+        gameId:
+          type: string
+        location:
+          type: string
+        status:
+          type: string
+          enum:
+            - live
+            - done
+        mode:
+          type: string
+        players:
+          type: object
+          properties:
+            blueOffensive:
+              type: object
+              properties:
+                name:
+                  type: string
+                score:
+                  type: integer
+            blueDefensive:
+              type: object
+              properties:
+                name:
+                  type: string
+                score:
+                  type: integer
+            redOffensive:
+              type: object
+              properties:
+                name:
+                  type: string
+                score:
+                  type: integer
+            redDefensive:
+              type: object
+              properties:
+                name:
+                  type: string
+                score:
+                  type: integer
+        redScore:
+          type: integer
+        blueScore:
+          type: integer
+        totalMatches:
+          type: integer
+        matchOfGame:
+          type: integer
+
+    Goal:
+      type: object
+      required:
+        - scoringPlayer
+        - matchId
+        - timeStamp
+      properties:
+        scoringPlayer:
+          type: string
+        matchId:
+          type: string
+        timeStamp:
+          type: string
+          format: date-time
+    NewPlayer:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+    PlayerWithWinRate:
+      type: object
+      required:
+        - name
+        - winRate
+      properties:
+        name:
+          type: string
+        winRate:
+          type: integer

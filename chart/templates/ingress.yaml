@@ -1,0 +1,53 @@
+{{- if .Values.ingress.enabled }}
+# The security headers the old reverse proxy set, on the app and the API alike.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "ncaleague.fullname" . }}-headers
+  labels:
+    {{- include "ncaleague.labels" . | nindent 4 }}
+spec:
+  headers:
+    stsSeconds: 31536000
+    stsIncludeSubdomains: true
+    contentTypeNosniff: true
+    frameDeny: true
+    referrerPolicy: no-referrer
+    contentSecurityPolicy: "frame-ancestors 'none'"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ncaleague.fullname" . }}
+  labels:
+    {{- include "ncaleague.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-headers@kubernetescrd
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ncaleague.fullname" . }}-backend
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ncaleague.fullname" . }}-frontend
+                port:
+                  name: http
+{{- end }}
