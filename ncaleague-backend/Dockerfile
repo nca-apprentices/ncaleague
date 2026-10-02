@@ -12,6 +12,9 @@ COPY ncaleague-backend/ ./
 COPY --from=models /api/types /ncaleague/api/types
 RUN bun run build
 USER bun
+# Bun serves in development mode otherwise, which answers an error with its
+# stack trace.
+ENV NODE_ENV=production
 EXPOSE 3000
 # Migrates before serving. The image has no pg_dump, so dbmate skips writing
 # db/schema.sql. exec makes the server PID 1, so it receives SIGTERM.
