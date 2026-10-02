@@ -29,6 +29,9 @@ ingress:
   enabled: true
   className: traefik
   host: ncaleague.example.com
+  # Traefik Middlewares in the release's namespace that every request passes
+  # after the headers, such as [github-login].
+  middlewares: []
   tls:
     enabled: true
     secretName: ncaleague-tls

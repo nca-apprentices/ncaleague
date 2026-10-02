@@ -23,7 +23,7 @@ metadata:
     {{- include "ncaleague.labels" . | nindent 4 }}
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-headers@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-headers@kubernetescrd{{ range .Values.ingress.middlewares }},{{ $.Release.Namespace }}-{{ . }}@kubernetescrd{{ end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
