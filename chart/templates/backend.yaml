@@ -26,6 +26,12 @@ spec:
       {{- with .Values.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
+      # The image names its user bun, which runAsNonRoot can't verify.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
       containers:
         - name: backend
           image: {{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}
@@ -39,10 +45,18 @@ spec:
                   key: uri
             - name: DATABASE_URL
               value: $(DATABASE_URI)?sslmode=verify-full&sslrootcert=/etc/ncaleague/database/ca.crt
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: database-ca
               mountPath: /etc/ncaleague/database
               readOnly: true
+            # Bun may write temporary files, and the root filesystem is
+            # read-only.
+            - name: tmp
+              mountPath: /tmp
           ports:
             - name: http
               containerPort: 3000
@@ -61,6 +75,8 @@ spec:
             items:
               - key: ca.crt
                 path: ca.crt
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

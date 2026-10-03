@@ -15,4 +15,7 @@ RUN npm run build
 FROM caddy:2.10.2-alpine
 COPY --from=build /ncaleague/ncaleague-frontend/dist /srv
 COPY ncaleague-frontend/Caddyfile /etc/caddy/Caddyfile
-EXPOSE 80
+# The base image grants Caddy the capability to bind port 80, and a binary with
+# a file capability fails to start where every capability is dropped.
+RUN setcap -r /usr/bin/caddy
+EXPOSE 8080
