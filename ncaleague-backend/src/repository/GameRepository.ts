@@ -243,10 +243,11 @@ export const deleteAllGoalsOfMatch = async (matchId: string): Promise<void> => {
   await db.deleteFrom('goals').where('match_id', '=', matchId).execute();
 };
 
-export const deleteGoal = async (scoringPlayer: string): Promise<void> => {
+export const deleteGoal = async (matchId: string, scoringPlayer: string): Promise<void> => {
   const latestGoal = await db
     .selectFrom('goals')
     .select(['scoring_player', 'time_stamp'])
+    .where('match_id', '=', matchId)
     .where('scoring_player', '=', scoringPlayer)
     .orderBy('time_stamp', 'desc')
     .limit(1)
@@ -255,6 +256,7 @@ export const deleteGoal = async (scoringPlayer: string): Promise<void> => {
   if (latestGoal) {
     await db
       .deleteFrom('goals')
+      .where('match_id', '=', matchId)
       .where('scoring_player', '=', scoringPlayer)
       .where('time_stamp', '=', latestGoal.time_stamp)
       .execute();

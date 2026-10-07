@@ -352,9 +352,9 @@ export const undoGoalAndReturnScore = async (
   const latestGoalRed = goalsTeamRed.length > 0 ? goalsTeamRed[goalsTeamRed.length - 1] : null;
 
   if (latestGoalBlue && (!latestGoalRed || latestGoalBlue.timeStamp > latestGoalRed.timeStamp)) {
-    await deleteGoal(latestGoalBlue.scoringPlayer);
+    await deleteGoal(matchId, latestGoalBlue.scoringPlayer);
   } else if (latestGoalRed) {
-    await deleteGoal(latestGoalRed.scoringPlayer);
+    await deleteGoal(matchId, latestGoalRed.scoringPlayer);
   }
 
   const playersList = [match.blueDefensive, match.blueOffensive, match.redDefensive, match.redOffensive];
