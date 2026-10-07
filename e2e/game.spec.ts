@@ -291,8 +291,15 @@ test('ranking and games pages list the results', async ({ page }) => {
   await page.getByRole('link', { name: 'Ranking' }).click();
   await expect(page.getByRole('heading', { name: 'Ranking' })).toBeVisible();
   await expect(page.locator('thead th')).toHaveText(['Rank', 'Name', 'Winrate']);
+  // The ranking shows as many players as fit the screen, a page at a
+  // time, so a player may be on a later page.
   const rate = async (name: string): Promise<number> => {
-    const cell = page.getByRole('row').filter({ hasText: name }).locator('td').last();
+    await page.goto('/ranking');
+    const row = page.getByRole('row').filter({ has: page.getByRole('cell', { name, exact: true }) });
+    while ((await row.count()) === 0) {
+      await page.getByText('Next', { exact: true }).click();
+    }
+    const cell = row.locator('td').last();
     await expect(cell).toHaveText(/^\d+(\.\d)?%$/);
     return parseFloat((await cell.innerText()).replace('%', ''));
   };
@@ -374,16 +381,20 @@ test('another browser watches a game but cannot change it', async ({ page, brows
 });
 
 // Runs last: it leaves more than a page of running matches behind.
-test('the games list pages by 20 matches', async ({ page }) => {
+test('the games list pages by the matches that fit the screen', async ({ page }) => {
   for (let n = 0; n < 21; n++) {
     await startGame(page, [`p${n}a`, `p${n}b`, `p${n}c`, `p${n}d`], '1-10');
   }
 
   await page.goto('/games');
-  await expect(page.locator('tbody tr')).toHaveCount(20);
+  const table = page.locator('table[data-fitted]');
+  await table.waitFor();
+  const rows = Number(await table.getAttribute('data-rows'));
+  expect(rows).toBeLessThanOrEqual(20);
+  await expect(page.locator('tbody tr')).toHaveCount(rows);
   await expect(page.locator('tbody tr').first().locator('td').nth(2)).toHaveText(/^P20/);
   await page.getByText('Next', { exact: true }).click();
-  await expect(page.locator('tbody tr').first().locator('td').nth(2)).toHaveText(/^P0/);
+  await expect(page.locator('tbody tr').first().locator('td').nth(2)).toHaveText(new RegExp(`^P${20 - rows}[A-D]$`));
   await page.getByText('Previous', { exact: true }).click();
   await expect(page.locator('tbody tr').first().locator('td').nth(2)).toHaveText(/^P20/);
 });

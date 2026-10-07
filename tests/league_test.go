@@ -361,8 +361,18 @@ func TestLists(t *testing.T) {
 	if err != nil || len(live) != 1 || live[0].ID != second.ID {
 		t.Errorf("Live() = %v, %v, want the second game", live, err)
 	}
-	history, err := l.History(ctx)
+	if total, err := l.Matches(ctx); err != nil || total != 2 {
+		t.Errorf("Matches() = %d, %v, want 2", total, err)
+	}
+	history, err := l.History(ctx, 0, 10)
 	if err != nil || len(history) != 2 || history[0].ID != second.ID || history[1].ID != first.ID {
 		t.Errorf("History() = %v, %v, want newest first", history, err)
+	}
+	if page, err := l.History(ctx, 1, 10); err != nil || len(page) != 1 || page[0].ID != first.ID {
+		t.Errorf("History(1, 10) = %v, %v, want the first game alone", page, err)
+	}
+	running, err := l.Running(ctx)
+	if err != nil || len(running) != 1 || running[0].ID != second.ID {
+		t.Errorf("Running() = %v, %v, want the second game's match", running, err)
 	}
 }

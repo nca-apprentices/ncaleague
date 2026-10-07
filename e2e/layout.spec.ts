@@ -43,6 +43,21 @@ test('the scoreboard fits a phone held sideways', async ({ page }) => {
   }
 });
 
+test('the scoreboard scales with the screen', async ({ page }) => {
+  await startGame(page, 'sca, scb, scc, scd');
+  const size = async (width: number, height: number): Promise<{ score: number; tile: number }> => {
+    await page.setViewportSize({ width, height });
+    return page.evaluate(() => ({
+      score: parseFloat(getComputedStyle(document.querySelector('h1')!).fontSize),
+      tile: document.querySelector('.tile')!.getBoundingClientRect().width,
+    }));
+  };
+  const phone = await size(390, 844);
+  const kiosk = await size(1920, 1080);
+  expect(kiosk.score).toBeGreaterThan(phone.score * 2);
+  expect(kiosk.tile).toBeGreaterThan(phone.tile * 2);
+});
+
 test('the tables fit a phone and a tablet without sideways scrolling', async ({ page }) => {
   await startGame(page, 'lta, ltb, ltc, ltd');
   for (let n = 0; n < 10; n++) {
@@ -58,6 +73,46 @@ test('the tables fit a phone and a tablet without sideways scrolling', async ({ 
       const scroll = page.locator('table').evaluate((t) => t.parentElement!.scrollWidth - t.parentElement!.clientWidth);
       expect(await scroll, `${width}px ${path}`).toBe(0);
       await expect(page.locator('tbody tr').first().locator('td').last()).toBeInViewport();
+    }
+  }
+});
+
+// The app runs on kiosks of any size, so no page may need scrolling.
+// Live is left out: other tests leave more games running than any
+// screen holds.
+test('no page needs scrolling on any screen', async ({ page }) => {
+  await startGame(page, 'nsa, nsb, nsc, nsd');
+  const match = page.url();
+  for (let n = 0; n < 10; n++) {
+    await page.getByRole('button', { name: 'nsa' }).click();
+  }
+  await page.waitForURL(/\/summary$/);
+  const summary = page.url();
+
+  // A running game puts a shorter row above the finished game's taller
+  // one, so the lists hold rows of two heights.
+  await startGame(page, 'nse, nsf, nsg, nsh');
+
+  // A list settles with one reload at most, whatever the rows' heights.
+  const loads: string[] = [];
+  page.on('request', (req) => {
+    if (req.isNavigationRequest()) {
+      loads.push(new URL(req.url()).pathname);
+    }
+  });
+
+  const sizes = [[390, 844], [844, 390], [768, 1024], [1024, 768], [1280, 800], [1920, 1080]];
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    for (const path of ['/', match, summary, '/games', '/ranking']) {
+      loads.length = 0;
+      await page.goto(path);
+      if (path === '/games' || path === '/ranking') {
+        await page.locator('table[data-fitted]').waitFor();
+        expect(loads.length, `${width}x${height} ${path} loads`).toBeLessThanOrEqual(2);
+      }
+      const overflow = await page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight);
+      expect(overflow, `${width}x${height} ${path}`).toBe(0);
     }
   }
 });

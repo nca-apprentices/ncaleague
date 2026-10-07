@@ -59,9 +59,14 @@ func (l *League) Live(ctx context.Context) ([]Match, error) {
 	return l.matches(ctx, liveMatches)
 }
 
-// History returns all matches, newest first.
-func (l *League) History(ctx context.Context) ([]Match, error) {
-	return l.matches(ctx, newestMatches)
+// Matches returns how many matches the league has played or is playing.
+func (l *League) Matches(ctx context.Context) (int, error) {
+	return l.countMatches(ctx)
+}
+
+// History returns n matches from the given one, newest first.
+func (l *League) History(ctx context.Context, from, n int) ([]Match, error) {
+	return l.matches(ctx, newestMatches, from, n)
 }
 
 func (l *League) Match(ctx context.Context, id string) (Match, error) {
@@ -84,8 +89,14 @@ func (l *League) Ranking(ctx context.Context) ([]Rank, error) {
 	if err != nil {
 		return nil, err
 	}
-	ms, err := l.matches(ctx, doneMatches)
-	return ranking(names, ms), err
+	records, err := l.records(ctx)
+	return ranking(names, records), err
+}
+
+// Running returns the matches of the running games, oldest first, so
+// each game ends with its running match.
+func (l *League) Running(ctx context.Context) ([]Match, error) {
+	return l.matches(ctx, liveGames)
 }
 
 // MayChange says whether the token lets its holder change the game.

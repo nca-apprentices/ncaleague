@@ -3,7 +3,7 @@
     <section class="sheet games">
       <h1>Games</h1>
       <div class="scroll">
-        <table>
+        <table data-fit="{{.Paging.Name}}" data-rows="{{.Paging.Rows}}">
           <thead>
             <tr>
               <th>Start Date</th>
@@ -29,17 +29,7 @@
           </tbody>
         </table>
       </div>
-      <div class="pages">
-        {{with .Prev}}<a href="?page={{.}}">Previous</a>{{end}}
-        {{range .Numbers}}
-          {{if eq . 0}}
-            <span>...</span>
-          {{else}}
-            <a href="?page={{.}}" aria-current="{{if eq . $.Page}}page{{else}}false{{end}}">{{.}}</a>
-          {{end}}
-        {{end}}
-        {{with .Next}}<a href="?page={{.}}">Next</a>{{end}}
-      </div>
+      {{template "pages" .Paging}}
     </section>
   </main>
 {{end}}

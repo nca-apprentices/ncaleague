@@ -97,17 +97,23 @@ type result struct {
 }
 
 func (s site) followed(r *http.Request) ([]followed, error) {
-	live, err := s.l.Live(r.Context())
+	ms, err := s.l.Running(r.Context())
 	if err != nil {
 		return nil, err
 	}
-
-	games := make([]followed, 0, len(live))
-	for _, m := range live {
-		game, err := s.l.Game(r.Context(), m.GameID)
-		if err != nil {
-			return nil, err
+	var order []string
+	byGame := map[string][]league.Match{}
+	for _, m := range ms {
+		if _, seen := byGame[m.GameID]; !seen {
+			order = append(order, m.GameID)
 		}
+		byGame[m.GameID] = append(byGame[m.GameID], m)
+	}
+
+	games := make([]followed, 0, len(order))
+	for _, id := range order {
+		game := byGame[id]
+		m := game[len(game)-1]
 		seats := m.Seats()
 		f := followed{
 			Match:    m,
@@ -143,14 +149,26 @@ func (s site) summary(r *http.Request) (any, error) {
 	return map[string]any{"Matches": game, "Winners": league.Winners(game)}, err
 }
 
+// ranking lists the players a page at a time. First is the index of
+// the page's first player, so the ranks count on across pages.
 func (s site) ranking(r *http.Request) (any, error) {
-	return s.l.Ranking(r.Context())
+	ranks, err := s.l.Ranking(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	p := paginate(r, "ranking", len(ranks))
+	return map[string]any{"Rows": ranks[p.From:p.To], "First": p.From, "Paging": p}, nil
 }
 
 // games lists the matches newest first, a page at a time, and shades
-// every other game.
+// every other game on the page.
 func (s site) games(r *http.Request) (any, error) {
-	ms, err := s.l.History(r.Context())
+	total, err := s.l.Matches(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	p := paginate(r, "games", total)
+	ms, err := s.l.History(r.Context(), p.From, p.Rows)
 	if err != nil {
 		return nil, err
 	}
@@ -167,22 +185,48 @@ func (s site) games(r *http.Request) (any, error) {
 		}
 		rows[i] = row{m, shaded}
 	}
+	return map[string]any{"Rows": rows, "Paging": p}, nil
+}
 
-	// Prev and Next are 0 where there is no such page.
-	pages := max((len(rows)+gamesPerPage-1)/gamesPerPage, 1)
+// A list shows as many rows as the browser's screen has room for. The
+// script measures the room and keeps the count in a cookie per list, so
+// the pages need no scrolling on a kiosk of any size.
+const (
+	defaultRows = 20
+	maxRows     = 100
+	rowsCookie  = "rows-"
+)
+
+// paging is the page of a list the request asks for. Prev and Next are
+// 0 where there is no such page.
+type paging struct {
+	Name                   string
+	From, To               int
+	Rows, Page, Prev, Next int
+	Numbers                []int
+}
+
+func paginate(r *http.Request, name string, total int) paging {
+	rows := defaultRows
+	if c, err := r.Cookie(rowsCookie + name); err == nil {
+		if n, err := strconv.Atoi(c.Value); err == nil {
+			rows = min(max(n, 1), maxRows)
+		}
+	}
+
+	pages := max((total+rows-1)/rows, 1)
 	n, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	n = min(max(n, 1), pages)
 	next := n + 1
 	if n == pages {
 		next = 0
 	}
-	return map[string]any{
-		"Rows":    rows[(n-1)*gamesPerPage : min(n*gamesPerPage, len(rows))],
-		"Page":    n,
-		"Prev":    n - 1,
-		"Next":    next,
-		"Numbers": pageNumbers(n, pages),
-	}, nil
+	return paging{
+		Name: name,
+		From: (n - 1) * rows, To: min(n*rows, total),
+		Rows: rows, Page: n, Prev: n - 1, Next: next,
+		Numbers: pageNumbers(n, pages),
+	}
 }
 
 // pageNumbers lists the pages to link: all of them up to nine, and beyond
@@ -348,8 +392,6 @@ func speculationRules(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"prerender": [{"where": {"and": [{"href_matches": "/*"}, {"not": {"href_matches": "/matches/*"}}]}, "eagerness": "moderate"}]}`))
 }
 
-const gamesPerPage = 20
-
 // board is a match as its scoreboard shows it.
 type board struct {
 	league.Match
@@ -418,7 +460,7 @@ var pages = func() map[string]*template.Template {
 	layout := template.Must(template.New("layout.html").Funcs(template.FuncMap{
 		"static": staticURL,
 		"upper":  strings.ToUpper,
-		"inc":    func(i int) int { return i + 1 },
+		"add":    func(a, b int) int { return a + b },
 		"date":   func(t time.Time) string { return t.In(zurich).Format("02/01/2006, 15:04") },
 		// seat names the seat, counted from blue offense, as the tables
 		// head their columns.

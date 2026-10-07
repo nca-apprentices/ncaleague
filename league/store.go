@@ -34,8 +34,8 @@ const (
 	matchByID     filter = "WHERE id = $1"
 	gameMatches   filter = "WHERE game_id = $1 ORDER BY start_date"
 	liveMatches   filter = "WHERE status = 'live' ORDER BY start_date"
-	doneMatches   filter = "WHERE status = 'done' ORDER BY start_date"
-	newestMatches filter = "ORDER BY start_date DESC"
+	liveGames     filter = "WHERE game_id IN (SELECT game_id FROM matches WHERE status = 'live') ORDER BY start_date"
+	newestMatches filter = "ORDER BY start_date DESC OFFSET $1 LIMIT $2"
 )
 
 // matches loads the matches with their scorers. Goals written before the
@@ -75,6 +75,52 @@ func (s store) match(ctx context.Context, id string) (Match, error) {
 		return Match{}, ErrNotFound
 	}
 	return ms[0], nil
+}
+
+// record is a player's finished matches and the ones they won.
+type record struct {
+	name         string
+	wins, played int
+}
+
+// records counts each player's finished matches and wins. A match counts
+// as won for the two players on the team with more goals.
+func (s store) records(ctx context.Context) ([]record, error) {
+	rows, err := s.q.QueryContext(ctx, `
+		WITH scored AS (
+			SELECT m.blue_offensive, m.blue_defensive, m.red_offensive, m.red_defensive,
+				count(*) FILTER (WHERE g.scoring_player IN (m.blue_offensive, m.blue_defensive)) AS blue,
+				count(*) FILTER (WHERE g.scoring_player IN (m.red_offensive, m.red_defensive)) AS red
+			FROM matches m LEFT JOIN goals g ON g.match_id = m.id
+			WHERE m.status = 'done'
+			GROUP BY m.id
+		), seats AS (
+			SELECT blue_offensive AS name, blue > red AS won FROM scored
+			UNION ALL SELECT blue_defensive, blue > red FROM scored
+			UNION ALL SELECT red_offensive, red > blue FROM scored
+			UNION ALL SELECT red_defensive, red > blue FROM scored
+		)
+		SELECT name, count(*) FILTER (WHERE won), count(*) FROM seats GROUP BY name`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []record
+	for rows.Next() {
+		var r record
+		if err := rows.Scan(&r.name, &r.wins, &r.played); err != nil {
+			return nil, err
+		}
+		records = append(records, r)
+	}
+	return records, rows.Err()
+}
+
+func (s store) countMatches(ctx context.Context) (int, error) {
+	var n int
+	err := s.q.QueryRowContext(ctx, `SELECT count(*) FROM matches`).Scan(&n)
+	return n, err
 }
 
 func (s store) players(ctx context.Context) ([]string, error) {

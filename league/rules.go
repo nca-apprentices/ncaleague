@@ -192,37 +192,23 @@ func rotate(p [4]string, played int) [4]string {
 	}
 }
 
-// ranking orders the players by win rate over the finished matches, by the
+// ranking orders the players by win rate over their records, by the
 // formula the league has always used.
-func ranking(names []string, ms []Match) []Rank {
-	type record struct{ wins, played int }
-	records := map[string]*record{}
-	for _, m := range ms {
-		blue, red := m.Score()
-		for i, name := range m.Players {
-			r := records[name]
-			if r == nil {
-				r = &record{}
-				records[name] = r
-			}
-			r.played += timesCounted
-			if (i < 2 && blue > red) || (i >= 2 && red > blue) {
-				r.wins += timesCounted
-			}
-		}
-	}
-
+func ranking(names []string, records []record) []Rank {
 	var sum float64
+	byName := map[string]record{}
 	for _, r := range records {
 		sum += float64(r.wins) / float64(r.played)
+		byName[r.name] = r
 	}
 	average := sum / float64(max(len(records), 1))
 
 	ranks := make([]Rank, len(names))
 	for i, name := range names {
 		ranks[i].Name = name
-		if r := records[name]; r != nil {
-			rate := (float64(r.wins) + priorMatches*average) / float64(r.played+priorMatches)
+		if r, ok := byName[name]; ok {
+			wins, played := r.wins*timesCounted, r.played*timesCounted
+			rate := (float64(wins) + priorMatches*average) / float64(played+priorMatches)
 			ranks[i].Winrate = math.Round(rate*100*10) / 10
 		}
 	}

@@ -54,6 +54,22 @@
   <option value="1-10">1 to 10</option>
 {{end}}
 
+{{/* The links to a list's pages. A 0 among the numbers stands for the
+  pages left out between. */}}
+{{define "pages"}}
+  <div class="pages">
+    {{with .Prev}}<a href="?page={{.}}">Previous</a>{{end}}
+    {{range .Numbers}}
+      {{if eq . 0}}
+        <span>...</span>
+      {{else}}
+        <a href="?page={{.}}" aria-current="{{if eq . $.Page}}page{{else}}false{{end}}">{{.}}</a>
+      {{end}}
+    {{end}}
+    {{with .Next}}<a href="?page={{.}}">Next</a>{{end}}
+  </div>
+{{end}}
+
 {{define "winner"}}
   {{- if eq . "blue"}}<span class="team blue">Blue</span>
   {{- else if eq . "red"}}<span class="team red">Red</span>

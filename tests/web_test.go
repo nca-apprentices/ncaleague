@@ -272,6 +272,30 @@ func TestGamesListPagesBy20(t *testing.T) {
 	}
 }
 
+// The script tells the server how many rows fit the screen in a cookie
+// per list.
+func TestListsShowTheRowsThatFit(t *testing.T) {
+	s := newSite(t)
+	c := s.browser()
+	for range 6 {
+		s.start(c, "a, b, c, d")
+	}
+	u, _ := url.Parse(s.srv.URL)
+	c.Jar.SetCookies(u, []*http.Cookie{{Name: "rows-games", Value: "5"}, {Name: "rows-ranking", Value: "3"}})
+
+	games := s.get(c, "/games").body
+	if n := strings.Count(games, "<td data-label=\"Mode\">"); n != 5 || !strings.Contains(games, `data-rows="5"`) || !strings.Contains(games, `<a href="?page=2">Next</a>`) {
+		t.Errorf("page 1 lists %d matches, want 5 and a next page", n)
+	}
+	ranking := s.get(c, "/ranking").body
+	if n := strings.Count(ranking, `<td class="name">`); n != 3 || !strings.Contains(ranking, `<a href="?page=2">Next</a>`) {
+		t.Errorf("page 1 ranks %d players, want 3 and a next page", n)
+	}
+	if second := s.get(c, "/ranking?page=2").body; !strings.Contains(second, "<td>4</td>") {
+		t.Error("page 2 doesn't go on with rank 4")
+	}
+}
+
 func TestStaticFilesAreCachedForGood(t *testing.T) {
 	s := newSite(t)
 	c := s.browser()
