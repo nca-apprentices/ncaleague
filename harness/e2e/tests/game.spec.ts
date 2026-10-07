@@ -82,10 +82,12 @@ test('a running game shows on the New Game page and opens from there', async ({ 
   const { blue } = await positions(page, matchId);
   await goal(page, blue[0], '1 : 0');
 
+  // Other games may be live too, so the card is the one with this game's
+  // player.
   await page.goto('/');
-  const card = page.getByRole('heading', { name: 'Winterthur 1 : 0' });
-  await expect(card).toBeVisible();
-  await expect(card.locator('..').getByText('Match 1 of 4')).toBeVisible();
+  const card = page.getByText(blue[0], { exact: true }).locator('xpath=ancestor::div[.//h1][1]');
+  await expect(card.getByRole('heading')).toHaveText('Winterthur 1 : 0');
+  await expect(card.getByText('Match 1 of 4')).toBeVisible();
 
   await card.click();
   await page.waitForURL(`/matches/${matchId}`);
