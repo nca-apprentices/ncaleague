@@ -34,7 +34,7 @@ HTTP 404
 # A new match needs four known players and a known location and mode.
 POST {{base}}/api/matches
 {"players": ["alice", "nobody", "noone", "none"], "location": "Zurich", "mode": "1-10"}
-HTTP 500
+HTTP 400
 
 POST {{base}}/api/players
 {"name": "m1"}
@@ -50,11 +50,26 @@ HTTP 200
 
 POST {{base}}/api/matches
 {"players": ["alice", "m1", "m2", "m3"], "location": "Mars", "mode": "1-10"}
-HTTP 500
+HTTP 400
 
 POST {{base}}/api/matches
 {"players": ["alice", "m1", "m2", "m3"], "location": "Zurich", "mode": "2-7"}
-HTTP 500
+HTTP 400
+
+POST {{base}}/api/matches
+{"players": ["alice", "m1", "m2"], "location": "Zurich", "mode": "1-10"}
+HTTP 400
+
+POST {{base}}/api/matches
+{"players": ["alice", "m1", "m2", "M1"], "location": "Zurich", "mode": "1-10"}
+HTTP 400
+
+POST {{base}}/api/matches
+Content-Type: application/json
+```
+not json
+```
+HTTP 400
 
 GET {{base}}/api/matches
 HTTP 200

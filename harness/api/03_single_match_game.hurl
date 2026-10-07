@@ -54,6 +54,17 @@ HTTP 403
 POST {{base}}/api/matches/{{match}}/goals/undo
 HTTP 403
 
+# A goal needs one of the match's players.
+POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: {{token}}
+{"scoringPlayer": "alice"}
+HTTP 400
+
+POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: {{token}}
+{}
+HTTP 400
+
 DELETE {{base}}/api/matches/{{match}}
 HTTP 403
 

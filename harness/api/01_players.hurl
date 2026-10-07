@@ -23,25 +23,29 @@ HTTP 200
 jsonpath "$" count == 1
 jsonpath "$[0].name" == "alice"
 
-# Invalid names fail with 500.
+# A name is a non-blank string of up to 50 characters.
 POST {{base}}/api/players
 {"name": "  "}
-HTTP 500
+HTTP 400
 
 POST {{base}}/api/players
 {"name": 5}
-HTTP 500
+HTTP 400
 
 POST {{base}}/api/players
 {}
-HTTP 500
+HTTP 400
+
+POST {{base}}/api/players
+{"name": "abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijk"}
+HTTP 400
 
 POST {{base}}/api/players
 Content-Type: application/json
 ```
 not json
 ```
-HTTP 500
+HTTP 400
 
 GET {{base}}/api/players
 HTTP 200

@@ -14,10 +14,12 @@
     "models": "openapi-generator-cli generate -i ../api/openapi.yaml -g typescript-fetch -o ../api/types"
   },
   "dependencies": {
+    "@hono/zod-validator": "0.9.1",
     "hono": "4.13.11",
     "kysely": "0.29.6",
     "pg": "8.23.0",
-    "pino": "10.3.1"
+    "pino": "10.3.1",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -23,7 +23,9 @@ import { getGoalsByMatchId, getMatchById, getMatchesByGameIdList } from 'src/rep
 import { getMaxScoreCount } from 'src/gameUtils';
 import { mayAbortMatch, mayChangeGame, mayChangeMatch } from 'src/gameControl';
 import { logger } from 'src/logger';
-import { NotFoundError } from 'src/errors';
+import { BadRequestError, NotFoundError } from 'src/errors';
+import { goalBody, newMatchBody, newPlayerBody } from 'src/requests';
+import { zValidator } from '@hono/zod-validator';
 
 const apiPrefix = '/api';
 const GAME_TOKEN_HEADER = 'X-Game-Token';
@@ -62,6 +64,9 @@ app.onError((error, c) => {
   if (error instanceof NotFoundError) {
     return c.body(null, 404);
   }
+  if (error instanceof BadRequestError) {
+    return c.body(null, 400);
+  }
   logger.error({ err: error, requestId: c.get('requestId'), method: c.req.method, path: c.req.path }, 'request failed');
   return c.text('Internal Server Error', 500);
 });
@@ -98,14 +103,14 @@ app.get(`${apiPrefix}/matches/live`, async (c) => {
   return c.json(matches, 200);
 });
 
-app.post(`${apiPrefix}/players`, async (c) => {
-  const newPlayer = await c.req.json();
+app.post(`${apiPrefix}/players`, zValidator('json', newPlayerBody), async (c) => {
+  const newPlayer = c.req.valid('json');
   await createNewPlayer(newPlayer);
   return c.json(204);
 });
 
-app.post(`${apiPrefix}/matches`, async (c) => {
-  const newMatch = await c.req.json();
+app.post(`${apiPrefix}/matches`, zValidator('json', newMatchBody), async (c) => {
+  const newMatch = c.req.valid('json');
   if ('gameId' in newMatch && !(await mayChangeGame(newMatch.gameId, c.req.header(GAME_TOKEN_HEADER)))) {
     return c.body(null, 403);
   }
@@ -143,16 +148,18 @@ app.delete(`${apiPrefix}/matches/:id`, async (c) => {
   return c.body(null, 204);
 });
 
-app.post(`${apiPrefix}/matches/:id/goals`, async (c) => {
+app.post(`${apiPrefix}/matches/:id/goals`, zValidator('json', goalBody), async (c) => {
   const matchId = c.req.param('id');
   if (!(await mayChangeMatch(matchId, c.req.header(GAME_TOKEN_HEADER)))) {
     return c.body(null, 403);
   }
-  const goal = await c.req.json();
-  const scoringPlayer = goal.scoringPlayer;
+  const { scoringPlayer } = c.req.valid('json');
   const match = await getMatchById(matchId);
   if (!match) {
     throw new Error('Match not found');
+  }
+  if (![match.blueOffensive, match.blueDefensive, match.redOffensive, match.redDefensive].includes(scoringPlayer)) {
+    return c.body(null, 400);
   }
   const maxScoreCount = getMaxScoreCount(match.mode);
   const matchWithScores = await getMatchByIdAndReturnWithNames(matchId);

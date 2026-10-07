@@ -24,6 +24,7 @@ import {
   pingDatabase,
 } from 'src/repository/GameRepository';
 import { logger } from 'src/logger';
+import { BadRequestError } from 'src/errors';
 
 import { PlayerConstellation } from 'src/types';
 import { Goal, Match, NewMatch, Player, RunningMatch } from 'api/types';
@@ -71,7 +72,7 @@ export const createNewMatch = async (
     const players = await Promise.all(match.players.map((name) => getPlayer(name).then((player) => player?.name)));
 
     if (players.some((name) => name === undefined)) {
-      throw new Error('Player was not found');
+      throw new BadRequestError('Player was not found');
     }
 
     const playerLocations = await firstMatchPlayerLocation(players.filter((name) => name !== undefined) as string[]);
