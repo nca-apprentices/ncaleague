@@ -41,7 +41,7 @@ export const GamesPagination: React.FC<GamesPaginationProps> = ({
   return (
     <div className="flex items-center justify-between gap-2">
       {currentPage > 1 && (
-        <button className="rounded bg-gray-300 px-3 py-1" onClick={() => setCurrentPage(currentPage - 1)}>
+        <button className="rounded-sm bg-gray-300 px-3 py-1" onClick={() => setCurrentPage(currentPage - 1)}>
           Previous
         </button>
       )}
@@ -49,7 +49,7 @@ export const GamesPagination: React.FC<GamesPaginationProps> = ({
         typeof item === 'number' ? (
           <button
             key={index}
-            className={`rounded px-3 py-1 ${currentPage === item ? 'bg-nca-blue text-white' : 'bg-gray-300'}`}
+            className={`rounded-sm px-3 py-1 ${currentPage === item ? 'bg-nca-blue text-white' : 'bg-gray-300'}`}
             onClick={() => setCurrentPage(item)}
           >
             {item}
@@ -61,7 +61,7 @@ export const GamesPagination: React.FC<GamesPaginationProps> = ({
         ),
       )}
       {currentPage < totalPages && (
-        <button className="rounded bg-gray-300 px-3 py-1" onClick={() => setCurrentPage(currentPage + 1)}>
+        <button className="rounded-sm bg-gray-300 px-3 py-1" onClick={() => setCurrentPage(currentPage + 1)}>
           Next
         </button>
       )}

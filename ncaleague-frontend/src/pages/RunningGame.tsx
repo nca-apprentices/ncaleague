@@ -150,12 +150,12 @@ export default function RunningGame(): React.JSX.Element {
 
   return (
     <div className="flex h-full justify-center p-3 md:p-6">
-      <div className="flex h-full w-full flex-col items-center justify-evenly rounded-xl bg-nca-blue px-1 py-2 2xl:py-8">
+      <div className="bg-nca-blue flex h-full w-full flex-col items-center justify-evenly rounded-xl px-1 py-2 2xl:py-8">
         <div className="mb-2 flex flex-col items-center text-center 2xl:mb-5">
-          <h1 className="mb-2 text-7xl uppercase text-white 2xl:mb-8 2xl:text-9xl">
+          <h1 className="mb-2 text-7xl text-white uppercase 2xl:mb-8 2xl:text-9xl">
             {totalGoalsTeamBlue} : {totalGoalsTeamRed}
           </h1>
-          <h2 className="mb-2 text-xl uppercase text-white sm:text-xl 2xl:mb-3 2xl:text-3xl">
+          <h2 className="mb-2 text-xl text-white uppercase sm:text-xl 2xl:mb-3 2xl:text-3xl">
             Match {matchInfo?.currentMatch} of {matchInfo?.totalMatches ?? 'unknown'}
           </h2>
           <p>Goal Blue</p>
@@ -165,7 +165,7 @@ export default function RunningGame(): React.JSX.Element {
           {players.map((player, index) => (
             <div
               key={`${player.name}_${player.position}`}
-              className={`w-45/100 sm:w-30/100 md:w-2/10 flex h-full flex-col content-center justify-center rounded-lg py-5 ${
+              className={`flex h-full flex-col content-center justify-center rounded-lg py-5 ${
                 index % 2 === 0 ? 'bg-blue-500' : 'bg-red-500'
               }`}
               onClick={() => canChange && player.name !== undefined && goalCount(player.name)}

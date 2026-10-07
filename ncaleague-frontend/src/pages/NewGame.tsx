@@ -193,7 +193,7 @@ export default function NewGame(): React.JSX.Element {
           <div className="grid w-full grid-cols-1 items-center justify-items-start gap-4 md:w-2/5 2xl:w-1/5">
             <p className="text-xl">Location: </p>
             <select
-              className="w-full border border-nca-blue p-2"
+              className="border-nca-blue w-full border p-2"
               name="location"
               value={location}
               onChange={handleLocationChange}
@@ -203,7 +203,7 @@ export default function NewGame(): React.JSX.Element {
             </select>
             <p className="text-xl">Game Mode: </p>
             <select
-              className="w-full border border-nca-blue p-2"
+              className="border-nca-blue w-full border p-2"
               name="gameMode"
               value={gameMode}
               onChange={handleGameModeChange}
@@ -219,7 +219,7 @@ export default function NewGame(): React.JSX.Element {
               placeholder="Shortsign of 4 players separated by commas, e.g., ab, cd, ef, gh"
               value={playerName}
               onChange={handlePlayerNameChange}
-              className="w-full rounded-md border border-nca-blue p-2"
+              className="border-nca-blue w-full rounded-md border p-2"
               data-tooltip-id="suggestions"
               data-tooltip-place="top"
               data-tooltip-content={`${isNewPlayer ? `Player(s) ${playersToCreate.join(', ')} not found!` : ''}`}
@@ -243,7 +243,7 @@ export default function NewGame(): React.JSX.Element {
               ))}
             {suggestions.length > 0 && playerName.trim() !== '' && (
               <div className="w-full text-center">
-                <div className="mb-2 rounded-md bg-blue-50 p-2 text-xl font-bold text-nca-blue">Suggestions:</div>
+                <div className="text-nca-blue mb-2 rounded-md bg-blue-50 p-2 text-xl font-bold">Suggestions:</div>
                 <ul>
                   {suggestions.map((suggestion, index) =>
                     index < 3 ? (

@@ -39,16 +39,16 @@ export default function PlayerNames(): React.JSX.Element {
             <table className="w-full table-fixed rounded-lg border border-gray-300">
               <thead>
                 <tr>
-                  <th className="border-b border-r border-gray-300 px-4 py-2">Rank</th>
-                  <th className="w-2/5 border-b border-r border-gray-300 px-4 py-2 sm:w-3/5">Name</th>
+                  <th className="border-r border-b border-gray-300 px-4 py-2">Rank</th>
+                  <th className="w-2/5 border-r border-b border-gray-300 px-4 py-2 sm:w-3/5">Name</th>
                   <th className="border-b border-gray-300 px-4 py-2">Winrate</th>
                 </tr>
               </thead>
               <tbody>
                 {playersWithWinRates.map(({ player, winrate, rank }, index) => (
                   <tr key={player.name} className={index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}>
-                    <td className="border-b border-r border-gray-300 px-4 py-2">{rank || index + 1}</td>
-                    <td className="truncate border-b border-r border-gray-300 px-4 py-2">{player.name}</td>
+                    <td className="border-r border-b border-gray-300 px-4 py-2">{rank || index + 1}</td>
+                    <td className="truncate border-r border-b border-gray-300 px-4 py-2">{player.name}</td>
                     <td className="border-b border-gray-300 px-4 py-2">{winrate}%</td>
                   </tr>
                 ))}

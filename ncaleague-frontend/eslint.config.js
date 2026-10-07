@@ -4,6 +4,7 @@ import { defineConfig } from 'eslint/config';
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths';
 import prettierRecommended from 'eslint-plugin-prettier/recommended';
 import reactHooks from 'eslint-plugin-react-hooks';
+import tailwindcss from 'eslint-plugin-tailwindcss';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -15,10 +16,12 @@ export default defineConfig(
   prettierRecommended,
   {
     languageOptions: { globals: globals.browser },
-    plugins: { 'react-hooks': reactHooks, 'no-relative-import-paths': noRelativeImportPaths },
+    settings: { tailwindcss: { cssConfigPath: './src/index.css' } },
+    plugins: { 'react-hooks': reactHooks, tailwindcss, 'no-relative-import-paths': noRelativeImportPaths },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+      'tailwindcss/no-contradicting-classname': 'error',
       'no-relative-import-paths/no-relative-import-paths': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'warn',

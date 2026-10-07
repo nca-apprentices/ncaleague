@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import 'tailwindcss/tailwind.css';
+import 'src/index.css';
 import App from 'src/App';
 
 const container = document.getElementById('root') as HTMLDivElement;

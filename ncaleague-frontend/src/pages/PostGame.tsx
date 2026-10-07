@@ -82,28 +82,28 @@ export default function PostGame(): React.JSX.Element {
               <table className="w-full table-fixed rounded-lg border border-gray-400 max-lg:w-[1000px]">
                 <thead>
                   <tr>
-                    <th className="border-b border-r border-gray-300 px-4 py-2">Match No.</th>
-                    <th className="border-b border-r border-gray-300 px-4 py-2">Blue Offensive</th>
-                    <th className="border-b border-r border-gray-300 px-4 py-2">Blue Defensive</th>
-                    <th className="border-b border-r border-gray-300 px-4 py-2">Red Offensive</th>
-                    <th className="border-b border-r border-gray-300 px-4 py-2">Red Defensive</th>
+                    <th className="border-r border-b border-gray-300 px-4 py-2">Match No.</th>
+                    <th className="border-r border-b border-gray-300 px-4 py-2">Blue Offensive</th>
+                    <th className="border-r border-b border-gray-300 px-4 py-2">Blue Defensive</th>
+                    <th className="border-r border-b border-gray-300 px-4 py-2">Red Offensive</th>
+                    <th className="border-r border-b border-gray-300 px-4 py-2">Red Defensive</th>
                     <th className="border-b border-gray-300 px-4 py-2">Winning Team</th>
                   </tr>
                 </thead>
                 <tbody>
                   {matches.map(({ blueOffensive, blueDefensive, redOffensive, redDefensive, winningTeam }, index) => (
                     <tr key={index} className={index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}>
-                      <td className="border-b border-r border-gray-300 px-4 py-2">{index + 1}</td>
-                      <td className="truncate border-b border-r border-gray-300 px-4 py-2">
+                      <td className="border-r border-b border-gray-300 px-4 py-2">{index + 1}</td>
+                      <td className="truncate border-r border-b border-gray-300 px-4 py-2">
                         {blueOffensive.toUpperCase()}
                       </td>
-                      <td className="truncate border-b border-r border-gray-300 px-4 py-2">
+                      <td className="truncate border-r border-b border-gray-300 px-4 py-2">
                         {blueDefensive.toUpperCase()}
                       </td>
-                      <td className="truncate border-b border-r border-gray-300 px-4 py-2">
+                      <td className="truncate border-r border-b border-gray-300 px-4 py-2">
                         {redOffensive.toUpperCase()}
                       </td>
-                      <td className="truncate border-b border-r border-gray-300 px-4 py-2">
+                      <td className="truncate border-r border-b border-gray-300 px-4 py-2">
                         {redDefensive.toUpperCase()}
                       </td>
                       <td className="border-b border-gray-300 px-4 py-2">{winningTeam == 'blue' ? 'Blue' : 'Red'}</td>
@@ -117,7 +117,7 @@ export default function PostGame(): React.JSX.Element {
         <h1 className="my-5 flex justify-center text-4xl">Rematch</h1>
         <p className="mt-5 text-xl">Game Mode:</p>
         <select
-          className="w-32 border border-nca-blue p-2"
+          className="border-nca-blue w-32 border p-2"
           name="newGameMode"
           value={newGameMode}
           onChange={handleGameModeChange}
@@ -126,7 +126,7 @@ export default function PostGame(): React.JSX.Element {
           <option value="3-5">3 to 5</option>
           <option value="1-10">1 to 10</option>
         </select>
-        <button className="mt-5 rounded-lg bg-nca-blue p-3 text-white" onClick={handleStartGame}>
+        <button className="bg-nca-blue mt-5 rounded-lg p-3 text-white" onClick={handleStartGame}>
           Rematch
         </button>
       </div>

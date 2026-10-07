@@ -69,36 +69,36 @@ const Games = (): React.JSX.Element => {
             <table className="w-full table-fixed rounded-lg border border-gray-400 max-lg:w-[1000px]">
               <thead>
                 <tr>
-                  <th className="border-b border-r border-gray-400 px-4 py-2">Start Date</th>
-                  <th className="border-b border-r border-gray-400 px-4 py-2">Mode</th>
-                  <th className="border-b border-r border-gray-400 px-4 py-2">Blue Offensive</th>
-                  <th className="border-b border-r border-gray-400 px-4 py-2">Blue Defensive</th>
-                  <th className="border-b border-r border-gray-400 px-4 py-2">Red Offensive</th>
-                  <th className="border-b border-r border-gray-400 px-4 py-2">Red Defensive</th>
-                  <th className="border-b border-r border-gray-400 px-4 py-2">Winning Team</th>
+                  <th className="border-r border-b border-gray-400 px-4 py-2">Start Date</th>
+                  <th className="border-r border-b border-gray-400 px-4 py-2">Mode</th>
+                  <th className="border-r border-b border-gray-400 px-4 py-2">Blue Offensive</th>
+                  <th className="border-r border-b border-gray-400 px-4 py-2">Blue Defensive</th>
+                  <th className="border-r border-b border-gray-400 px-4 py-2">Red Offensive</th>
+                  <th className="border-r border-b border-gray-400 px-4 py-2">Red Defensive</th>
+                  <th className="border-r border-b border-gray-400 px-4 py-2">Winning Team</th>
                 </tr>
               </thead>
               <tbody>
                 {currentMatches?.map((match: MatchWithRowColor, index) => {
                   return (
                     <tr key={index} className={`text-center ${match.rowColor}`}>
-                      <td className="border-b border-r border-gray-400 px-4 py-2">
+                      <td className="border-r border-b border-gray-400 px-4 py-2">
                         {new Intl.DateTimeFormat('en-GB', timeOptions).format(new Date(match.startDate))}
                       </td>
-                      <td className="border-b border-r border-gray-400 px-4 py-2">{match.mode}</td>
-                      <td className="truncate border-b border-r border-gray-400 px-4 py-2">
+                      <td className="border-r border-b border-gray-400 px-4 py-2">{match.mode}</td>
+                      <td className="truncate border-r border-b border-gray-400 px-4 py-2">
                         {match.blueOffensive.toUpperCase()}
                       </td>
-                      <td className="truncate border-b border-r border-gray-400 px-4 py-2">
+                      <td className="truncate border-r border-b border-gray-400 px-4 py-2">
                         {match.blueDefensive.toUpperCase()}
                       </td>
-                      <td className="truncate border-b border-r border-gray-400 px-4 py-2">
+                      <td className="truncate border-r border-b border-gray-400 px-4 py-2">
                         {match.redOffensive.toUpperCase()}
                       </td>
-                      <td className="truncate border-b border-r border-gray-400 px-4 py-2">
+                      <td className="truncate border-r border-b border-gray-400 px-4 py-2">
                         {match.redDefensive.toUpperCase()}
                       </td>
-                      <td className="border-b border-r border-gray-400 px-4 py-2">
+                      <td className="border-r border-b border-gray-400 px-4 py-2">
                         {match.winningTeam === 'red' ? 'Red' : match.winningTeam === 'blue' ? 'Blue' : 'Not finished'}
                       </td>
                     </tr>
