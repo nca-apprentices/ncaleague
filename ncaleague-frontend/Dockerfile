@@ -10,7 +10,9 @@ COPY ncaleague-frontend/package.json ncaleague-frontend/package-lock.json ./
 RUN npm ci
 COPY ncaleague-frontend/ ./
 COPY --from=models /api/types /ncaleague/api/types
-RUN npm run build
+# The release workflow passes the git tag, which the navigation bar shows.
+ARG VERSION=dev
+RUN VITE_VERSION="$VERSION" npm run build
 
 FROM caddy:2.10.2-alpine
 COPY --from=build /ncaleague/ncaleague-frontend/dist /srv

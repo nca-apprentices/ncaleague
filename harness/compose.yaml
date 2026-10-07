@@ -33,6 +33,8 @@ services:
     build:
       context: ..
       dockerfile: ncaleague-frontend/Dockerfile
+      args:
+        VERSION: v0.0.0-harness
 
   proxy:
     image: caddy:2.10.2-alpine

@@ -144,3 +144,9 @@ test('ranking and games pages list the results', async ({ page }) => {
   await expect(newest.locator('td').nth(4)).toHaveText(red[0].toUpperCase());
   await expect(newest.locator('td').last()).toHaveText('Red');
 });
+
+// compose.yaml builds the frontend with this version.
+test('the navigation bar shows the build version', async ({ page }) => {
+  await page.goto('/ranking');
+  await expect(page.getByRole('navigation').getByText('v0.0.0-harness', { exact: true })).toBeVisible();
+});

@@ -31,6 +31,7 @@ jobs:
           context: .
           file: ncaleague-${{ matrix.app }}/Dockerfile
           push: true
+          build-args: VERSION=${{ github.ref_name }}
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague-${{ matrix.app }}:${{ github.ref_name }}
 
   chart:
