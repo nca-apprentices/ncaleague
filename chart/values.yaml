@@ -24,6 +24,9 @@ ingress:
   # Traefik Middlewares in the release's namespace that every request passes
   # after the headers, such as [github-login].
   middlewares: []
+  # Requests per second that all clients share. Each open Live page polls
+  # once a second.
+  rateLimit: { average: 50, burst: 100 }
   tls:
     enabled: true
     secretName: ncaleague-tls

@@ -12,6 +12,21 @@ spec:
     stsSeconds: 31536000
     stsIncludeSubdomains: true
 ---
+# One request budget that all clients share, so no flood reaches the
+# database. Traefik answers 429 beyond it.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "ncaleague.fullname" . }}-ratelimit
+  labels:
+    {{- include "ncaleague.labels" . | nindent 4 }}
+spec:
+  rateLimit:
+    average: {{ .Values.ingress.rateLimit.average }}
+    burst: {{ .Values.ingress.rateLimit.burst }}
+    sourceCriterion:
+      requestHost: true
+---
 # Compresses the pages, styles, and scripts on their way out.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
@@ -30,7 +45,7 @@ metadata:
     {{- include "ncaleague.labels" . | nindent 4 }}
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-headers@kubernetescrd,{{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-compress@kubernetescrd{{ range .Values.ingress.middlewares }},{{ $.Release.Namespace }}-{{ . }}@kubernetescrd{{ end }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-ratelimit@kubernetescrd,{{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-headers@kubernetescrd,{{ .Release.Namespace }}-{{ include "ncaleague.fullname" . }}-compress@kubernetescrd{{ range .Values.ingress.middlewares }},{{ $.Release.Namespace }}-{{ . }}@kubernetescrd{{ end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- if .Values.ingress.tls.enabled }}
