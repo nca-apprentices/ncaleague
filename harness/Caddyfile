@@ -1,0 +1,6 @@
+# Routes like the chart's ingress: /api to the backend, the rest to the
+# frontend.
+:8080 {
+	reverse_proxy /api/* backend:3000
+	reverse_proxy frontend:8080
+}

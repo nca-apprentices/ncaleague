@@ -39,6 +39,25 @@ jobs:
           npm run lint
           npm run build
 
+  # The API and browser suites against the production images on a fresh
+  # database.
+  harness:
+    name: Harness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: hurl node
+      - name: Browser
+        working-directory: harness/e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - run: harness/run.sh
+        env:
+          COMPOSE: docker compose
+
   chart:
     name: Chart
     runs-on: ubuntu-latest

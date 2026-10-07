@@ -1,0 +1,46 @@
+# The production images behind a proxy that routes like the ingress, on
+# localhost:8080. run.sh starts it fresh and tests it.
+name: ncaleague-harness
+
+services:
+  db:
+    image: postgres:18.6
+    environment:
+      POSTGRES_DB: ncaleague
+      POSTGRES_USER: ncaleague
+      POSTGRES_PASSWORD: ncaleague
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'ncaleague']
+      interval: 1s
+      retries: 30
+
+  backend:
+    build:
+      context: ..
+      dockerfile: ncaleague-backend/Dockerfile
+    environment:
+      DATABASE_URL: postgres://ncaleague:ncaleague@db:5432/ncaleague?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O', '/dev/null', 'http://localhost:3000/api/players']
+      interval: 1s
+      retries: 60
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: ncaleague-frontend/Dockerfile
+
+  proxy:
+    image: caddy:2.10.2-alpine
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    ports:
+      - 8080:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started

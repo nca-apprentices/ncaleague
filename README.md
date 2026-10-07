@@ -8,6 +8,7 @@ A table soccer league: players, matches, goals, and rankings.
 | `ncaleague-backend/`  | Bun, Hono, Kysely, and dbmate on PostgreSQL     |
 | `ncaleague-frontend/` | React, Vite, and Tailwind CSS, served by Caddy |
 | `chart/`              | The Helm chart                                 |
+| `harness/`            | Tests against the running production images    |
 
 ## Development
 
@@ -37,6 +38,19 @@ cd ncaleague-frontend
 npm install
 npm run dev
 ```
+
+## Harness
+
+`harness/run.sh` builds both production images, starts them on a fresh
+database behind a proxy that routes like the ingress, and tests them on
+`localhost:8080`:
+
+- `harness/api/` holds the hurl suite, which pins every route's behavior,
+  including known bugs.
+- `harness/e2e/` holds the Playwright suite, which plays games through the
+  browser.
+
+The script uses Podman. Set `COMPOSE="docker compose"` to use Docker instead.
 
 ## Releases
 
