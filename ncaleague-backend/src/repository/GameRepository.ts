@@ -1,4 +1,5 @@
 import { db } from 'src/database';
+import { sql } from 'kysely';
 import { NewGoal } from 'src/types';
 import { Goal, Match, NewMatch, Player, NewPlayer } from 'api/types';
 
@@ -136,14 +137,7 @@ export const getMatchById = async (matchId: string): Promise<Match | undefined> 
 };
 
 export const allLiveMatches = async (): Promise<Match[]> => {
-  const dbMatches = await db
-    .selectFrom('matches')
-    .where('status', '=', 'live')
-    .selectAll()
-    .execute()
-    .catch(() => {
-      return [];
-    });
+  const dbMatches = await db.selectFrom('matches').where('status', '=', 'live').selectAll().execute();
 
   const matches: Match[] = dbMatches.map((match) => ({
     location: match.location,
@@ -268,15 +262,17 @@ export const deleteGoal = async (scoringPlayer: string): Promise<void> => {
 };
 
 export const getGoalsForPlayers = async (matchId: string[], playerIds: string[]): Promise<Goal[]> => {
+  // SQL rejects an empty IN list.
+  if (matchId.length === 0 || playerIds.length === 0) {
+    return [];
+  }
+
   const dbGoals = await db
     .selectFrom('goals')
     .where('scoring_player', 'in', playerIds)
     .where('match_id', 'in', matchId)
     .selectAll()
-    .execute()
-    .catch(() => {
-      return [];
-    });
+    .execute();
 
   const goals: Goal[] = dbGoals.map((goal) => ({
     matchId: goal.match_id,
@@ -417,6 +413,10 @@ export const findLastActivity = async (gameId: string): Promise<Date | undefined
   ]);
   const times = [matchStart?.last, goal?.last].filter((time): time is Date => time instanceof Date);
   return times.length > 0 ? new Date(Math.max(...times.map((time) => time.getTime()))) : undefined;
+};
+
+export const pingDatabase = async (): Promise<void> => {
+  await sql`SELECT 1`.execute(db);
 };
 
 export const deleteMatch = async (matchId: string): Promise<void> => {

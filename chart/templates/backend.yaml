@@ -60,8 +60,11 @@ spec:
           ports:
             - name: http
               containerPort: 3000
+          # Ready means the database answers. Liveness stays on the port, so a
+          # database outage doesn't restart the backend.
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /api/health
               port: http
           livenessProbe:
             tcpSocket:

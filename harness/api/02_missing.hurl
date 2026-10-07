@@ -1,6 +1,8 @@
 # Requests for a match or game that doesn't exist.
 GET {{base}}/api/matches/missing
 HTTP 500
+[Asserts]
+header "X-Request-Id" exists
 
 GET {{base}}/api/matches/missing/goals
 HTTP 200

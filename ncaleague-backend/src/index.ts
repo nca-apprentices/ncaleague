@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { HTTPException } from 'hono/http-exception';
+import { requestId, type RequestIdVariables } from 'hono/request-id';
 import {
   createNewMatch,
   createNewGoal,
@@ -14,12 +16,50 @@ import {
   calculatePlayerScoresByMatchId,
   abortGame,
   getMatchesOfGame,
+  isDatabaseReachable,
 } from 'src/service';
 import { getGoalsByMatchId, getMatchById, getMatchesByGameIdList } from 'src/repository/GameRepository';
 import { getMaxScoreCount } from 'src/gameUtils';
 import { mayAbortMatch, mayChangeGame, mayChangeMatch } from 'src/gameControl';
+import { logger } from 'src/logger';
 
-const app = new Hono();
+const apiPrefix = '/api';
+const GAME_TOKEN_HEADER = 'X-Game-Token';
+const HEALTH_PATH = `${apiPrefix}/health`;
+
+const app = new Hono<{ Variables: RequestIdVariables }>();
+
+// Every response carries an X-Request-Id, and every log line about the
+// request carries the same ID.
+app.use('*', requestId());
+
+// One line per request. The probes call health every few seconds, so it
+// stays out.
+app.use('*', async (c, next) => {
+  const start = performance.now();
+  await next();
+  if (c.req.path === HEALTH_PATH) {
+    return;
+  }
+  logger.info(
+    {
+      requestId: c.get('requestId'),
+      method: c.req.method,
+      path: c.req.path,
+      status: c.res.status,
+      durationMs: Math.round(performance.now() - start),
+    },
+    'request',
+  );
+});
+
+app.onError((error, c) => {
+  if (error instanceof HTTPException) {
+    return error.getResponse();
+  }
+  logger.error({ err: error, requestId: c.get('requestId'), method: c.req.method, path: c.req.path }, 'request failed');
+  return c.text('Internal Server Error', 500);
+});
 
 app.use(
   '*',
@@ -31,8 +71,12 @@ app.use(
   }),
 );
 
-const apiPrefix = '/api';
-const GAME_TOKEN_HEADER = 'X-Game-Token';
+app.get(HEALTH_PATH, async (c) => {
+  if (await isDatabaseReachable()) {
+    return c.json({ status: 'ok' }, 200);
+  }
+  return c.json({ status: 'unavailable' }, 503);
+});
 
 app.get(`${apiPrefix}/players`, async (c) => {
   const players = await getAllPlayers();
@@ -82,15 +126,11 @@ app.get(`${apiPrefix}/games/:id/summary`, async (c) => {
 
 app.delete(`${apiPrefix}/matches/:id`, async (c) => {
   const matchId = c.req.param('id');
-  try {
-    if (!(await mayAbortMatch(matchId, c.req.header(GAME_TOKEN_HEADER)))) {
-      return c.body(null, 403);
-    }
-    if ((await abortGame(matchId)) === 'finished') {
-      return c.body(null, 403);
-    }
-  } catch {
-    return c.body(null, 500);
+  if (!(await mayAbortMatch(matchId, c.req.header(GAME_TOKEN_HEADER)))) {
+    return c.body(null, 403);
+  }
+  if ((await abortGame(matchId)) === 'finished') {
+    return c.body(null, 403);
   }
   return c.body(null, 204);
 });

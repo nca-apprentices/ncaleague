@@ -21,7 +21,9 @@ import {
   deleteAllGoalsOfMatch,
   getLastGoalOfMatch,
   findMatchStatus,
+  pingDatabase,
 } from 'src/repository/GameRepository';
+import { logger } from 'src/logger';
 
 import { PlayerConstellation } from 'src/types';
 import { Goal, Match, NewMatch, Player, RunningMatch } from 'api/types';
@@ -776,12 +778,8 @@ export const abortGame = async (matchId: string): Promise<'aborted' | 'finished'
     return 'finished';
   }
 
-  try {
-    await deleteAllGoalsOfMatch(matchId);
-    await deleteMatch(matchId);
-  } catch (error) {
-    console.error('Failed to abort game:', error);
-  }
+  await deleteAllGoalsOfMatch(matchId);
+  await deleteMatch(matchId);
   return 'aborted';
 };
 
@@ -802,7 +800,19 @@ export const getMatchesOfGame = async (gameId: string): Promise<Match[]> => {
       }),
     );
   } catch (error) {
-    console.error('Failed to fetch the matches of a game:', error);
+    // A match without goals has no winning goal, so the summary fails and
+    // answers 404.
+    logger.warn({ err: error, gameId }, 'game summary failed');
     return [];
+  }
+};
+
+export const isDatabaseReachable = async (): Promise<boolean> => {
+  try {
+    await pingDatabase();
+    return true;
+  } catch (error) {
+    logger.error({ err: error }, 'database unreachable');
+    return false;
   }
 };
