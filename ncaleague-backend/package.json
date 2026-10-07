@@ -13,7 +13,7 @@
     "models": "openapi-generator-cli generate -i ../api/openapi.yaml -g typescript-fetch -o ../api/types"
   },
   "dependencies": {
-    "hono": "^3.10.2",
+    "hono": "^4.13.7",
     "kysely": "^0.26.3",
     "pg": "^8.11.3",
     "uuid": "^9.0.1"
