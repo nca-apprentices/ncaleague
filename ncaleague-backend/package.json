@@ -6,6 +6,7 @@
     "build": "bun run lint && bun build src/index.ts --target bun --outdir ./target",
     "serve": "bun run target/index.js",
     "lint": "bun run eslint src",
+    "typecheck": "tsc",
     "db:up": "docker-compose -f db/docker-compose.yml up -d",
     "db:migrate": "bun run dbmate up",
     "db:rollback": "bun run dbmate down",
@@ -19,13 +20,15 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "^2.10.0",
+    "@eslint/js": "10.0.1",
+    "@openapitools/openapi-generator-cli": "2.41.0",
+    "@types/bun": "1.4.2",
     "@types/pg": "^8.10.9",
     "@types/uuid": "^9.0.8",
-    "@typescript-eslint/eslint-plugin": "^6.13.1",
-    "bun-types": "^1.0.7",
     "dbmate": "^2.17.0",
-    "eslint": "^8.54.0",
-    "eslint-plugin-no-relative-import-paths": "^1.5.3"
+    "eslint": "10.11.0",
+    "eslint-plugin-no-relative-import-paths": "1.7.3",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0"
   }
 }

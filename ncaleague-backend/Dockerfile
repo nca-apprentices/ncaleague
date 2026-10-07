@@ -1,5 +1,5 @@
 # Built from the repository root, which holds the OpenAPI document.
-FROM openapitools/openapi-generator-cli:v7.2.0 AS models
+FROM openapitools/openapi-generator-cli:v7.25.0 AS models
 COPY api/openapi.yaml /api/openapi.yaml
 RUN java -jar /opt/openapi-generator/modules/openapi-generator-cli/target/openapi-generator-cli.jar \
     generate -i /api/openapi.yaml -g typescript-fetch -o /api/types

@@ -2,12 +2,13 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
-    "types": ["bun-types"],
-    "baseUrl": "./",
+    "types": ["bun"],
     "paths": {
-      "src/*": ["src/*"],
+      "src/*": ["./src/*"],
       "api/*": ["../api/*"]
     }
   }

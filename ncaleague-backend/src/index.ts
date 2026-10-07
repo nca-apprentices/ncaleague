@@ -81,7 +81,7 @@ app.delete(`${apiPrefix}/matches/:id`, async (c) => {
     if ((await abortGame(matchId)) === 'finished') {
       return c.body(null, 403);
     }
-  } catch (error) {
+  } catch {
     return c.body(null, 500);
   }
   return c.body(null, 204);
@@ -125,7 +125,7 @@ app.post(`${apiPrefix}/matches/:id/goals/undo`, async (c) => {
 
   const maxScoreCount = getMaxScoreCount(currentMatch.mode);
 
-  let res = {};
+  let res;
 
   if (currentMatch && currentMatchGoals && currentMatchGoals.length == 0) {
     const allMatches = await getMatchesByGameIdList([currentMatch.gameId]);
@@ -151,7 +151,6 @@ app.post(`${apiPrefix}/matches/:id/goals/undo`, async (c) => {
     });
 
     if (isMatchAlreadyDone) {
-      isMatchAlreadyDone = false;
       return c.body(null, 403);
     } else {
       res = await undoGoalAndReturnScore(matchId);

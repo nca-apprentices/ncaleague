@@ -492,8 +492,8 @@ export const getMatchByIdAndReturnWithNames = async (matchId: string): Promise<R
 export const calculateWinRates = async (
   players?: string[],
 ): Promise<{ playerName: string; winrate: number; rank: number }[]> => {
-  let allMatches: Match[] = [];
-  let allGoals: Goal[] = [];
+  let allMatches: Match[];
+  let allGoals: Goal[];
 
   if (players && players.length > 0) {
     const allPlayerMatches = await Promise.all(players.map((playerName) => getAllMatchesByPlayerNames(playerName)));
