@@ -25,7 +25,6 @@ import {
 
 import { PlayerConstellation } from 'src/types';
 import { Goal, Match, NewMatch, Player, RunningMatch } from 'api/types';
-import { v4 as uuidv4 } from 'uuid';
 import { determineWinningTeam, getMaxScoreCount, getNumberOfMatches } from 'src/gameUtils';
 import { startGame } from 'src/gameControl';
 
@@ -56,14 +55,14 @@ export const createNewMatch = async (
   token?: string;
 }> => {
   const startDate = new Date();
-  const id = uuidv4();
+  const id = crypto.randomUUID();
   let newMatch: NewMatch;
   let token: string | undefined;
   if ('gameId' in match) {
     const game = await findNewestMatchByGameId(match.gameId);
     newMatch = await createANewMatchInAExistingGame(game.gameId, game.mode, game.id);
   } else {
-    const currentGameId = uuidv4();
+    const currentGameId = crypto.randomUUID();
 
     match.players = match.players.map((name) => name.toLowerCase());
 
@@ -311,7 +310,7 @@ export const createANewMatchInAExistingGame = async (
     location: currentMatch.location,
     status: 'live' as const,
     mode: currentMatch.mode,
-    id: uuidv4(),
+    id: crypto.randomUUID(),
     gameId: gameId,
     startDate: new Date(),
     blueOffensive: rotatedPlayerPositions.blue_offensive,

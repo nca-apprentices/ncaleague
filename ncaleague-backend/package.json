@@ -14,21 +14,23 @@
     "models": "openapi-generator-cli generate -i ../api/openapi.yaml -g typescript-fetch -o ../api/types"
   },
   "dependencies": {
-    "hono": "^3.10.2",
-    "kysely": "^0.26.3",
-    "pg": "^8.11.3",
-    "uuid": "^9.0.1"
+    "hono": "4.13.11",
+    "kysely": "0.29.6",
+    "pg": "8.23.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@openapitools/openapi-generator-cli": "2.41.0",
     "@types/bun": "1.4.2",
-    "@types/pg": "^8.10.9",
-    "@types/uuid": "^9.0.8",
-    "dbmate": "^2.17.0",
+    "@types/node": "25.9.8",
+    "@types/pg": "8.23.1",
+    "dbmate": "2.36.0",
     "eslint": "10.11.0",
     "eslint-plugin-no-relative-import-paths": "1.7.3",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.0"
+  },
+  "overrides": {
+    "@types/node": "25.9.8"
   }
 }

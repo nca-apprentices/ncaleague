@@ -24,8 +24,7 @@ HTTP 200
 [Asserts]
 xpath "//div[@id='root']" exists
 
-# CORS admits the Vite dev server only, in production too. Any other origin
-# gets the dev server's origin back, which its browser rejects.
+# CORS admits the Vite dev server only, in production too.
 OPTIONS {{base}}/api/players
 Origin: http://localhost:5173
 Access-Control-Request-Method: POST
@@ -39,4 +38,4 @@ GET {{base}}/api/players
 Origin: https://elsewhere.example
 HTTP 200
 [Asserts]
-header "Access-Control-Allow-Origin" == "http://localhost:5173"
+header "Access-Control-Allow-Origin" not exists
