@@ -281,10 +281,9 @@ func TestMissingMatchesAndGames(t *testing.T) {
 }
 
 // The ranking keeps the league's formula: a win rate shrinks toward the
-// average as if the player had played 20 more matches at it, and each
-// match counts once per participant. One 1-10 match won by blue gives
-// (4 + 20 * 0.5) / (4 + 20) to blue and 10 / 24 to red. Running matches
-// count once they end.
+// average as if the player had played 20 more matches at it. One 1-10
+// match won by blue gives (1 + 20 * 0.5) / (1 + 20) to blue and 10 / 21
+// to red. Running matches count once they end.
 func TestRanking(t *testing.T) {
 	l, _ := newLeague(t)
 	m, token := start(t, l, "1-10", "a", "b", "c", "d")
@@ -302,7 +301,7 @@ func TestRanking(t *testing.T) {
 		rate[r.Name] = r.Winrate
 	}
 	want := map[string]float64{
-		m.Players[0]: 58.3, m.Players[1]: 58.3, m.Players[2]: 41.7, m.Players[3]: 41.7,
+		m.Players[0]: 52.4, m.Players[1]: 52.4, m.Players[2]: 47.6, m.Players[3]: 47.6,
 		"e": 0, "f": 0, "g": 0, "h": 0,
 	}
 	for name, w := range want {

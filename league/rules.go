@@ -55,10 +55,6 @@ const (
 	// played this many more matches at the average, so a few lucky wins
 	// don't top the ranking.
 	priorMatches = 20
-
-	// Each match counts once per participant in the ranking, as it always
-	// has, so four times.
-	timesCounted = 4
 )
 
 var (
@@ -207,8 +203,7 @@ func ranking(names []string, records []record) []Rank {
 	for i, name := range names {
 		ranks[i].Name = name
 		if r, ok := byName[name]; ok {
-			wins, played := r.wins*timesCounted, r.played*timesCounted
-			rate := (float64(wins) + priorMatches*average) / float64(played+priorMatches)
+			rate := (float64(r.wins) + priorMatches*average) / float64(r.played+priorMatches)
 			ranks[i].Winrate = math.Round(rate*100*10) / 10
 		}
 	}
