@@ -807,6 +807,16 @@ export const getMatchesOfGame = async (gameId: string): Promise<Match[]> => {
   }
 };
 
+// A game gets its next match once the running match ends, until it has
+// all its matches. A game that doesn't exist goes on to its usual answer.
+export const mayStartNextMatch = async (gameId: string): Promise<boolean> => {
+  const matches = await findAllMatchesByGameId(gameId);
+  if (matches.length === 0) {
+    return true;
+  }
+  return matches.every((match) => match.status === 'done') && matches.length < getNumberOfMatches(matches[0].mode);
+};
+
 export const isDatabaseReachable = async (): Promise<boolean> => {
   try {
     await pingDatabase();

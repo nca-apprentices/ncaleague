@@ -17,6 +17,7 @@ import {
   abortGame,
   getMatchesOfGame,
   isDatabaseReachable,
+  mayStartNextMatch,
 } from 'src/service';
 import { getGoalsByMatchId, getMatchById, getMatchesByGameIdList } from 'src/repository/GameRepository';
 import { getMaxScoreCount } from 'src/gameUtils';
@@ -102,6 +103,9 @@ app.post(`${apiPrefix}/players`, async (c) => {
 app.post(`${apiPrefix}/matches`, async (c) => {
   const newMatch = await c.req.json();
   if ('gameId' in newMatch && !(await mayChangeGame(newMatch.gameId, c.req.header(GAME_TOKEN_HEADER)))) {
+    return c.body(null, 403);
+  }
+  if ('gameId' in newMatch && !(await mayStartNextMatch(newMatch.gameId))) {
     return c.body(null, 403);
   }
   const createdMatch = await createNewMatch(newMatch);

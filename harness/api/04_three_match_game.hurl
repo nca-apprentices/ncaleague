@@ -34,6 +34,12 @@ HTTP 200
 jsonpath "$.matchOfGame" == 1
 jsonpath "$.totalMatches" == 3
 
+# A game gets its next match only after the running one ends.
+POST {{base}}/api/matches
+X-Game-Token: {{token}}
+{"gameId": "{{game}}"}
+HTTP 403
+
 POST {{base}}/api/matches/{{m1}}/goals
 X-Game-Token: {{token}}
 [Options]
@@ -198,6 +204,12 @@ jsonpath "$.blueScore" == 5
 jsonpath "$.matchStatus" == "done"
 jsonpath "$.newMatch" == false
 jsonpath "$.gameId" == {{game}}
+
+# A finished game gets no more matches.
+POST {{base}}/api/matches
+X-Game-Token: {{token}}
+{"gameId": "{{game}}"}
+HTTP 403
 
 GET {{base}}/api/games/{{game}}/summary
 HTTP 200
