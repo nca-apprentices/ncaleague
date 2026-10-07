@@ -72,6 +72,15 @@ test('a new match follows the last goal, and undo returns to the last match', as
   await expect(page.getByRole('heading', { level: 2 })).toHaveText('Match 2 of 3');
   await expect(score(page)).toHaveText('0 : 0');
 
+  // The summary of a running game shows the finished match's winner only.
+  const match = await (await page.request.get(`/api/matches/${firstId}`)).json();
+  await page.goto(`/games/${match.gameId}/summary`);
+  const rows = page.locator('tbody tr');
+  await expect(rows).toHaveCount(2);
+  await expect(rows.nth(0).locator('td').last()).toHaveText('Blue');
+  await expect(rows.nth(1).locator('td').last()).toHaveText('Not finished');
+  await page.goBack();
+
   await page.getByRole('button', { name: 'Undo Goal' }).click();
   await page.waitForURL((url) => url.pathname.endsWith(firstId));
   await expect(score(page)).toHaveText('4 : 0');

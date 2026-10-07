@@ -300,8 +300,14 @@ export const updateMatchStatus = async (matchId: string, newStatus: 'live' | 'do
     .execute();
 };
 
+// In the order played.
 export const findAllMatchesByGameId = async (gameId: string): Promise<Match[]> => {
-  const dbMatches = await db.selectFrom('matches').where('game_id', '=', gameId).selectAll().execute();
+  const dbMatches = await db
+    .selectFrom('matches')
+    .where('game_id', '=', gameId)
+    .orderBy('start_date', 'asc')
+    .selectAll()
+    .execute();
 
   const matches: Match[] = dbMatches.map((match) => ({
     location: match.location,

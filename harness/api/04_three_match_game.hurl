@@ -137,6 +137,16 @@ jsonpath "$.players.blueDefensive" == {{bo}}
 jsonpath "$.players.redOffensive" == {{bd}}
 jsonpath "$.players.redDefensive" == {{rd}}
 
+# Only a finished match has a winner. Matches list in the order played.
+GET {{base}}/api/games/{{game}}/summary
+HTTP 200
+[Asserts]
+jsonpath "$" count == 2
+jsonpath "$[0].id" == {{m1}}
+jsonpath "$[0].winningTeam" == "blue"
+jsonpath "$[1].id" == {{m2}}
+jsonpath "$[1].winningTeam" not exists
+
 # Red wins the second match 5:3.
 POST {{base}}/api/matches/{{m2}}/goals
 X-Game-Token: {{token}}
@@ -144,6 +154,11 @@ X-Game-Token: {{token}}
 repeat: 3
 {"scoringPlayer": "{{ro}}"}
 HTTP 201
+
+GET {{base}}/api/games/{{game}}/summary
+HTTP 200
+[Asserts]
+jsonpath "$[1].winningTeam" not exists
 
 POST {{base}}/api/matches/{{m2}}/goals
 X-Game-Token: {{token}}
@@ -215,6 +230,9 @@ GET {{base}}/api/games/{{game}}/summary
 HTTP 200
 [Asserts]
 jsonpath "$" count == 3
+jsonpath "$[0].id" == {{m1}}
+jsonpath "$[1].id" == {{m2}}
+jsonpath "$[2].id" == {{m3}}
 jsonpath "$[?(@.id == '{{m1}}')].winningTeam" == "blue"
 jsonpath "$[?(@.id == '{{m2}}')].winningTeam" == "red"
 jsonpath "$[?(@.id == '{{m3}}')].winningTeam" == "blue"

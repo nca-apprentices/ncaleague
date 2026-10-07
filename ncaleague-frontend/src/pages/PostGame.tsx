@@ -106,7 +106,9 @@ export default function PostGame(): React.JSX.Element {
                       <td className="truncate border-r border-b border-gray-300 px-4 py-2">
                         {redDefensive.toUpperCase()}
                       </td>
-                      <td className="border-b border-gray-300 px-4 py-2">{winningTeam == 'blue' ? 'Blue' : 'Red'}</td>
+                      <td className="border-b border-gray-300 px-4 py-2">
+                        {winningTeam === 'red' ? 'Red' : winningTeam === 'blue' ? 'Blue' : 'Not finished'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

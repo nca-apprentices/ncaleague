@@ -785,28 +785,26 @@ export const abortGame = async (matchId: string): Promise<'aborted' | 'finished'
   return 'aborted';
 };
 
+// The last goal of a finished match decides its winner. A running match has
+// none yet.
 export const getMatchesOfGame = async (gameId: string): Promise<Match[]> => {
-  try {
-    const matchesOfGame = await findAllMatchesByGameId(gameId);
+  const matchesOfGame = await findAllMatchesByGameId(gameId);
 
-    return await Promise.all(
-      matchesOfGame.map(async (match) => {
-        const winningGoal = await getLastGoalOfMatch(match.id);
-
-        if (winningGoal.scoringPlayer === match.blueDefensive || winningGoal.scoringPlayer === match.blueOffensive) {
-          match.winningTeam = 'blue';
-        } else {
-          match.winningTeam = 'red';
-        }
+  return await Promise.all(
+    matchesOfGame.map(async (match) => {
+      if (match.status !== 'done') {
         return match;
-      }),
-    );
-  } catch (error) {
-    // A match without goals has no winning goal, so the summary fails and
-    // answers 404.
-    logger.warn({ err: error, gameId }, 'game summary failed');
-    return [];
-  }
+      }
+
+      const winningGoal = await getLastGoalOfMatch(match.id);
+      if (winningGoal.scoringPlayer === match.blueDefensive || winningGoal.scoringPlayer === match.blueOffensive) {
+        match.winningTeam = 'blue';
+      } else {
+        match.winningTeam = 'red';
+      }
+      return match;
+    }),
+  );
 };
 
 // A game gets its next match once the running match ends, until it has
