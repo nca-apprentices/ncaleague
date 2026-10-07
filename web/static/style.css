@@ -288,7 +288,8 @@ nav .version {
    from across the room. */
 .boards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  grid-template-columns: repeat(auto-fill, min(100%, 24rem));
+  justify-content: center;
   gap: 1.5rem;
   width: min(100%, 80rem);
 }
@@ -639,8 +640,7 @@ button.tile {
 }
 
 .sheet table {
-  width: 1000px;
-  table-layout: fixed;
+  width: 100%;
   border: 1px solid var(--gray-400);
 }
 
@@ -866,18 +866,14 @@ button.tile {
     height: 3.5rem;
   }
 
-  .sheet {
-    width: 80%;
-  }
-
   .sheet .scroll {
     overflow: auto;
   }
 }
 
-@media (min-width: 1024px) {
-  .sheet table {
-    width: 100%;
+@media (min-width: 1280px) {
+  .sheet {
+    width: 80%;
   }
 }
 
@@ -934,5 +930,104 @@ button.tile {
   .controls button {
     font-size: 1.875rem;
     line-height: 2.25rem;
+  }
+}
+
+/* A tablet: smaller type, so seven columns fit. */
+@media (max-width: 1023px) {
+  .sheet table {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+
+  .sheet th,
+  .sheet td {
+    padding: 0.5rem;
+  }
+}
+
+/* A phone upright: the games and a summary list each match as a block of
+   labeled cells, since seven columns don't fit the width. */
+@media (max-width: 639px) {
+  .games thead,
+  .summary thead {
+    display: none;
+  }
+
+  .games tr,
+  .summary tr {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--gray-300);
+  }
+
+  .games td,
+  .summary td {
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+
+  .games td::before,
+  .summary td::before {
+    content: attr(data-label) ": ";
+    color: var(--gray-500);
+  }
+}
+
+/* A phone held sideways: the score to the left of the tiles and the
+   controls to their right, so the scoreboard fits without scrolling. */
+@media (max-height: 500px) {
+  .board {
+    padding: 0.5rem;
+  }
+
+  .board > div {
+    flex-direction: row;
+    padding: 0.25rem;
+  }
+
+  .board header,
+  .board footer {
+    flex: 1;
+    margin: 0;
+  }
+
+  .board .goal,
+  .board header p,
+  .board footer > p {
+    display: none;
+  }
+
+  .board h1 {
+    font-size: 3rem;
+  }
+
+  .board .tiles {
+    flex: 0 1 60%;
+    width: auto;
+    max-width: 32rem;
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .board .tile {
+    padding: 0.25rem 0;
+  }
+
+  .board .skull {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .board .tile span,
+  .board .tile b {
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+
+  .controls {
+    flex-direction: column;
   }
 }

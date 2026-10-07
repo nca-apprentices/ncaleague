@@ -420,6 +420,11 @@ var pages = func() map[string]*template.Template {
 		"upper":  strings.ToUpper,
 		"inc":    func(i int) int { return i + 1 },
 		"date":   func(t time.Time) string { return t.In(zurich).Format("02/01/2006, 15:04") },
+		// seat names the seat, counted from blue offense, as the tables
+		// head their columns.
+		"seat": func(i int) string {
+			return []string{"Blue Offensive", "Blue Defensive", "Red Offensive", "Red Defensive"}[i]
+		},
 		// won says whether the player in the seat, counted from blue
 		// offense, won the match.
 		"won": func(m league.Match, seat int) bool {

@@ -18,10 +18,12 @@
           <tbody>
             {{range .Rows}}
               <tr class="{{if .Shaded}}shaded{{end}}">
-                <td>{{date .Start}}</td>
-                <td>{{.Mode}}</td>
-                {{range .Players}}<td class="name">{{upper .}}</td>{{end}}
-                <td>{{template "winner" .Winner}}</td>
+                <td data-label="Start Date">{{date .Start}}</td>
+                <td data-label="Mode">{{.Mode}}</td>
+                {{range $seat, $name := .Players}}
+                  <td class="name" data-label="{{seat $seat}}">{{upper $name}}</td>
+                {{end}}
+                <td data-label="Winning Team">{{template "winner" .Winner}}</td>
               </tr>
             {{end}}
           </tbody>

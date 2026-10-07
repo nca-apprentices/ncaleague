@@ -23,11 +23,11 @@
           <tbody>
             {{range $m := .Matches}}
               <tr>
-                <td>{{$m.Number}}</td>
+                <td data-label="Match No.">{{$m.Number}}</td>
                 {{range $seat, $name := $m.Players}}
-                  <td class="name{{if won $m $seat}} won{{end}}">{{upper $name}}</td>
+                  <td class="name{{if won $m $seat}} won{{end}}" data-label="{{seat $seat}}">{{upper $name}}</td>
                 {{end}}
-                <td>{{template "winner" $m.Winner}}</td>
+                <td data-label="Winning Team">{{template "winner" $m.Winner}}</td>
               </tr>
             {{end}}
           </tbody>
