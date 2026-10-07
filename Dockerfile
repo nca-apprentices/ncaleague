@@ -4,6 +4,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY cmd cmd
 COPY league league
+COPY trace trace
 COPY web web
 # The release workflow passes the git tag, which the navigation bar shows.
 ARG VERSION=dev
