@@ -41,7 +41,7 @@ func Open(ctx context.Context, db *sql.DB) (*League, error) {
 	if err := migrate(ctx, db); err != nil {
 		return nil, err
 	}
-	return &League{store{db}, db}, nil
+	return &League{store{traced{db}}, db}, nil
 }
 
 // Ping checks that the database answers.
@@ -291,7 +291,7 @@ func (l *League) change(ctx context.Context, matchID string, tokens Tokens, a ac
 	}
 	defer tx.Rollback()
 
-	t := &League{store: store{tx}}
+	t := &League{store: store{traced{tx}}}
 	if err := t.lockGame(ctx, m.GameID); err != nil {
 		return err
 	}

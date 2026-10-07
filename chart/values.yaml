@@ -17,6 +17,11 @@ resources:
 database:
   cluster: ncaleague-db
 
+# The OpenTelemetry Collector the app sends its traces to over OTLP/HTTP.
+# Empty sends none.
+telemetry:
+  endpoint: http://telemetry.observability.svc:4318
+
 ingress:
   enabled: true
   className: traefik

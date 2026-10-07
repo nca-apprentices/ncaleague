@@ -1,8 +1,11 @@
 // Command ncaleague serves a table soccer league on :8080. DATABASE_URL
-// names its PostgreSQL database, which it migrates on start.
+// names its PostgreSQL database, which it migrates on start. With
+// OTEL_EXPORTER_OTLP_ENDPOINT set, it sends its traces there as the
+// service OTEL_SERVICE_NAME names.
 package main
 
 import (
+	"cmp"
 	"context"
 	"database/sql"
 	"errors"
@@ -16,6 +19,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/nca-apprentices/ncaleague/league"
+	"github.com/nca-apprentices/ncaleague/trace"
 	"github.com/nca-apprentices/ncaleague/web"
 )
 
@@ -44,6 +48,11 @@ func run() error {
 	defer db.Close()
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(10)
+
+	if endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"); endpoint != "" {
+		exporter := trace.Export(endpoint, cmp.Or(os.Getenv("OTEL_SERVICE_NAME"), "ncaleague"))
+		defer exporter.Stop()
+	}
 
 	l, err := league.Open(ctx, db)
 	if err != nil {

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 	"uuid"
+
+	"github.com/nca-apprentices/ncaleague/trace"
 )
 
 const (
@@ -34,19 +36,36 @@ func secure(next http.Handler) http.Handler {
 type requestIDKey struct{}
 
 // logRequests gives every request an ID, which every log line about it
-// carries, and logs one line per request. The probes call health every
-// few seconds, so it stays out.
+// carries, serves it in a span under the caller's trace, and logs one
+// line per request. The probes call health every few seconds, so it
+// stays out of both.
 func logRequests(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		id := uuid.NewV4().String()
 		w.Header().Set("X-Request-Id", id)
-		r = r.WithContext(context.WithValue(r.Context(), requestIDKey{}, id))
+		ctx := context.WithValue(r.Context(), requestIDKey{}, id)
+		if r.URL.Path == "/health" {
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
+
+		ctx, span := trace.Start(trace.Parent(ctx, r.Header.Get("traceparent")), r.Method, trace.Server)
+		defer span.End()
+		span.Set("http.request.method", r.Method)
+		span.Set("url.path", r.URL.Path)
+		r = r.WithContext(ctx)
 
 		rec := &recorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rec, r)
-		if r.URL.Path == "/health" {
-			return
+		// The mux names the route on the request as it serves it.
+		if r.Pattern != "" {
+			span.Rename(r.Pattern)
+			span.Set("http.route", r.Pattern)
+		}
+		span.Set("http.response.status_code", rec.status)
+		if rec.status >= http.StatusInternalServerError {
+			span.Fail()
 		}
 		slog.InfoContext(r.Context(), "request", "method", r.Method, "path", r.URL.Path,
 			"status", rec.status, "durationMs", time.Since(start).Milliseconds())
@@ -64,7 +83,7 @@ func (r *recorder) WriteHeader(status int) {
 }
 
 // Logs wraps a log handler so the lines written while serving a request
-// carry its ID.
+// carry its ID and its trace's, which links a line to its trace.
 func Logs(h slog.Handler) slog.Handler {
 	return requestLogs{h}
 }
@@ -74,6 +93,9 @@ type requestLogs struct{ slog.Handler }
 func (h requestLogs) Handle(ctx context.Context, r slog.Record) error {
 	if id, ok := ctx.Value(requestIDKey{}).(string); ok {
 		r.AddAttrs(slog.String("requestId", id))
+	}
+	if traceID, spanID, ok := trace.IDs(ctx); ok {
+		r.AddAttrs(slog.String("trace_id", traceID), slog.String("span_id", spanID))
 	}
 	return h.Handler.Handle(ctx, r)
 }

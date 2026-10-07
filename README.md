@@ -12,6 +12,7 @@ a short script adds typing aids, live scores, and a confirmation.
 | `cmd/ncaleague/` | The command: opens the database and serves on `:8080`       |
 | `league/`        | The league: players, games, goals, ranking, and who may act |
 | `web/`           | The pages and forms, with `templates/` and `static/`        |
+| `trace/`         | Spans and their OTLP/HTTP exporter                          |
 | `tests/`         | Go tests of `league` and `web` through their exported APIs  |
 | `e2e/`           | Browser tests against the running production image          |
 | `chart/`         | The Helm chart                                              |
@@ -61,7 +62,16 @@ The app writes JSON lines to stdout. Each request logs one line, and each
 game event logs its game, match, location, mode, match number, score, and
 teams: `game started`, `goal`, `goal undone`, `match finished`, `match
 started`, and `match aborted`. Every line written while serving a request
-carries its `requestId`.
+carries its `requestId`, and its `trace_id` and `span_id`.
+
+## Traces
+
+With `OTEL_EXPORTER_OTLP_ENDPOINT` set, such as `http://telemetry:4318`,
+the app sends its traces there over OTLP/HTTP as the service
+`OTEL_SERVICE_NAME` names, by default `ncaleague`. A request is a server
+span, named by its route, and each SQL statement under it is a client
+span. A request with a `traceparent` header joins the caller's trace. The
+chart's `telemetry.endpoint` sets the endpoint.
 
 ## End-to-end tests
 

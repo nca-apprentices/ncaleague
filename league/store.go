@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+
+	"github.com/nca-apprentices/ncaleague/trace"
 )
 
 // store reads and writes the league's tables. Values reach the database
@@ -24,6 +26,45 @@ type querier interface {
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
+// traced runs each statement in a client span named by its first word,
+// with the statement's text.
+type traced struct{ querier }
+
+func (t traced) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	ctx, span := statement(ctx, query)
+	defer span.End()
+	res, err := t.querier.ExecContext(ctx, query, args...)
+	if err != nil {
+		span.Fail()
+	}
+	return res, err
+}
+
+func (t traced) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	ctx, span := statement(ctx, query)
+	defer span.End()
+	rows, err := t.querier.QueryContext(ctx, query, args...)
+	if err != nil {
+		span.Fail()
+	}
+	return rows, err
+}
+
+func (t traced) QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row {
+	ctx, span := statement(ctx, query)
+	defer span.End()
+	return t.querier.QueryRowContext(ctx, query, args...)
+}
+
+func statement(ctx context.Context, query string) (context.Context, *trace.Span) {
+	text := strings.Join(strings.Fields(query), " ")
+	operation, _, _ := strings.Cut(text, " ")
+	ctx, span := trace.Start(ctx, operation, trace.Client)
+	span.Set("db.system.name", "postgresql")
+	span.Set("db.query.text", text)
+	return ctx, span
 }
 
 // filter picks and orders the matches to load. Callers pass only these
