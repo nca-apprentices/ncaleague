@@ -23,6 +23,7 @@ HTTP 201
 [Captures]
 match: jsonpath "$.id"
 game: jsonpath "$.gameId"
+token: jsonpath "$.token"
 bo: jsonpath "$.players.blueOffensive"
 bd: jsonpath "$.players.blueDefensive"
 ro: jsonpath "$.players.redOffensive"
@@ -38,6 +39,27 @@ jsonpath "$.players.*" contains "q3"
 jsonpath "$.players.*" contains "q4"
 jsonpath "$.blueScore" == 0
 jsonpath "$.redScore" == 0
+jsonpath "$.token" matches /^[A-Za-z0-9_-]{43}$/
+
+# Only the token's holder changes the game.
+POST {{base}}/api/matches/{{match}}/goals
+{"scoringPlayer": "{{bo}}"}
+HTTP 403
+
+POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: wrong
+{"scoringPlayer": "{{bo}}"}
+HTTP 403
+
+POST {{base}}/api/matches/{{match}}/goals/undo
+HTTP 403
+
+DELETE {{base}}/api/matches/{{match}}
+HTTP 403
+
+DELETE {{base}}/api/matches/{{match}}
+X-Game-Token: wrong
+HTTP 403
 
 GET {{base}}/api/matches/{{match}}
 HTTP 200
@@ -56,11 +78,13 @@ jsonpath "$.blueScore" == 0
 jsonpath "$.redScore" == 0
 jsonpath "$.matchOfGame" == 1
 jsonpath "$.totalMatches" == 1
+jsonpath "$.token" not exists
 
 GET {{base}}/api/matches/live
 HTTP 200
 [Asserts]
 jsonpath "$" count == 1
+jsonpath "$[0].token" not exists
 jsonpath "$[0].id" == {{match}}
 jsonpath "$[0].gameId" == {{game}}
 jsonpath "$[0].status" == "live"
@@ -80,9 +104,11 @@ jsonpath "$[0].winningTeam" not exists
 
 # Undo in a game's first match without goals does nothing.
 POST {{base}}/api/matches/{{match}}/goals/undo
+X-Game-Token: {{token}}
 HTTP 204
 
 POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{bo}}"}
 HTTP 201
 [Asserts]
@@ -96,6 +122,7 @@ jsonpath "$.players.blueOffensive.score" == 1
 jsonpath "$.players.redDefensive.score" == 0
 
 POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{rd}}"}
 HTTP 201
 [Asserts]
@@ -114,6 +141,7 @@ jsonpath "$[0].timeStamp" isIsoDate
 
 # Undo removes the latest goal.
 POST {{base}}/api/matches/{{match}}/goals/undo
+X-Game-Token: {{token}}
 HTTP 200
 [Asserts]
 jsonpath "$.id" == {{match}}
@@ -132,6 +160,7 @@ jsonpath "$[0].players.blueOffensive.score" == 1
 
 # Goals 2 to 9 by the blue defense.
 POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 8
 {"scoringPlayer": "{{bd}}"}
@@ -140,6 +169,7 @@ HTTP 201
 jsonpath "$.matchStatus" == "live"
 
 POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{bd}}"}
 HTTP 201
 [Asserts]
@@ -152,10 +182,12 @@ jsonpath "$.gameId" == {{game}}
 
 # A finished match takes no goals and no undo.
 POST {{base}}/api/matches/{{match}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{ro}}"}
 HTTP 403
 
 POST {{base}}/api/matches/{{match}}/goals/undo
+X-Game-Token: {{token}}
 HTTP 403
 
 GET {{base}}/api/matches/{{match}}

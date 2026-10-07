@@ -22,6 +22,7 @@ HTTP 201
 [Captures]
 m1: jsonpath "$.id"
 game: jsonpath "$.gameId"
+token: jsonpath "$.token"
 bo: jsonpath "$.players.blueOffensive"
 bd: jsonpath "$.players.blueDefensive"
 ro: jsonpath "$.players.redOffensive"
@@ -33,6 +34,7 @@ HTTP 200
 jsonpath "$.totalMatches" == 4
 
 POST {{base}}/api/matches/{{m1}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 4
 {"scoringPlayer": "{{bo}}"}
@@ -41,12 +43,14 @@ HTTP 201
 jsonpath "$.matchStatus" == "live"
 
 POST {{base}}/api/matches/{{m1}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{bo}}"}
 HTTP 201
 [Asserts]
 jsonpath "$.newMatch" == true
 
 POST {{base}}/api/matches
+X-Game-Token: {{token}}
 {"gameId": "{{game}}"}
 HTTP 201
 [Captures]
@@ -58,6 +62,7 @@ jsonpath "$.players.redOffensive" == {{bd}}
 jsonpath "$.players.redDefensive" == {{rd}}
 
 POST {{base}}/api/matches/{{m2}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 4
 {"scoringPlayer": "{{rd}}"}
@@ -66,12 +71,14 @@ HTTP 201
 jsonpath "$.matchStatus" == "live"
 
 POST {{base}}/api/matches/{{m2}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{rd}}"}
 HTTP 201
 [Asserts]
 jsonpath "$.newMatch" == true
 
 POST {{base}}/api/matches
+X-Game-Token: {{token}}
 {"gameId": "{{game}}"}
 HTTP 201
 [Captures]
@@ -83,6 +90,7 @@ jsonpath "$.players.redOffensive" == {{bo}}
 jsonpath "$.players.redDefensive" == {{bd}}
 
 POST {{base}}/api/matches/{{m3}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 4
 {"scoringPlayer": "{{bd}}"}
@@ -91,6 +99,7 @@ HTTP 201
 jsonpath "$.matchStatus" == "live"
 
 POST {{base}}/api/matches/{{m3}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{bd}}"}
 HTTP 201
 [Asserts]
@@ -100,6 +109,7 @@ jsonpath "$.newMatch" == true
 # After the third match, blue defense stays, red defense moves to blue
 # offense, and the others move one position along.
 POST {{base}}/api/matches
+X-Game-Token: {{token}}
 {"gameId": "{{game}}"}
 HTTP 201
 [Captures]
@@ -117,6 +127,7 @@ jsonpath "$.matchOfGame" == 4
 jsonpath "$.totalMatches" == 4
 
 POST {{base}}/api/matches/{{m4}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 4
 {"scoringPlayer": "{{bo}}"}
@@ -125,6 +136,7 @@ HTTP 201
 jsonpath "$.matchStatus" == "live"
 
 POST {{base}}/api/matches/{{m4}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{bo}}"}
 HTTP 201
 [Asserts]

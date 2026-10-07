@@ -17,6 +17,7 @@ import {
 } from 'src/service';
 import { getGoalsByMatchId, getMatchById, getMatchesByGameIdList } from 'src/repository/GameRepository';
 import { getMaxScoreCount } from 'src/gameUtils';
+import { mayAbortMatch, mayChangeGame, mayChangeMatch } from 'src/gameControl';
 
 const app = new Hono();
 
@@ -31,6 +32,7 @@ app.use(
 );
 
 const apiPrefix = '/api';
+const GAME_TOKEN_HEADER = 'X-Game-Token';
 
 app.get(`${apiPrefix}/players`, async (c) => {
   const players = await getAllPlayers();
@@ -55,6 +57,9 @@ app.post(`${apiPrefix}/players`, async (c) => {
 
 app.post(`${apiPrefix}/matches`, async (c) => {
   const newMatch = await c.req.json();
+  if ('gameId' in newMatch && !(await mayChangeGame(newMatch.gameId, c.req.header(GAME_TOKEN_HEADER)))) {
+    return c.body(null, 403);
+  }
   const createdMatch = await createNewMatch(newMatch);
   return c.json(createdMatch, 201);
 });
@@ -78,6 +83,9 @@ app.get(`${apiPrefix}/games/:id/summary`, async (c) => {
 app.delete(`${apiPrefix}/matches/:id`, async (c) => {
   const matchId = c.req.param('id');
   try {
+    if (!(await mayAbortMatch(matchId, c.req.header(GAME_TOKEN_HEADER)))) {
+      return c.body(null, 403);
+    }
     if ((await abortGame(matchId)) === 'finished') {
       return c.body(null, 403);
     }
@@ -88,8 +96,11 @@ app.delete(`${apiPrefix}/matches/:id`, async (c) => {
 });
 
 app.post(`${apiPrefix}/matches/:id/goals`, async (c) => {
-  const goal = await c.req.json();
   const matchId = c.req.param('id');
+  if (!(await mayChangeMatch(matchId, c.req.header(GAME_TOKEN_HEADER)))) {
+    return c.body(null, 403);
+  }
+  const goal = await c.req.json();
   const scoringPlayer = goal.scoringPlayer;
   const match = await getMatchById(matchId);
   if (!match) {
@@ -116,6 +127,9 @@ app.get(`${apiPrefix}/matches/:id/goals`, async (c) => {
 
 app.post(`${apiPrefix}/matches/:id/goals/undo`, async (c) => {
   const matchId = c.req.param('id');
+  if (!(await mayChangeMatch(matchId, c.req.header(GAME_TOKEN_HEADER)))) {
+    return c.body(null, 403);
+  }
   const currentMatch = await getMatchById(matchId);
   const currentMatchGoals = await getGoalsByMatchId(matchId);
 

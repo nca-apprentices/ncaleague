@@ -385,6 +385,40 @@ export const findMatchStatus = async (matchId: string): Promise<'live' | 'done' 
   return match?.status;
 };
 
+export const createGame = async (id: string, tokenHash: string): Promise<void> => {
+  await db.insertInto('games').values({ id, token_hash: tokenHash }).execute();
+};
+
+// Undefined when the game doesn't exist, null when it predates tokens.
+export const findGameTokenHash = async (gameId: string): Promise<string | null | undefined> => {
+  const game = await db.selectFrom('games').where('id', '=', gameId).select('token_hash').executeTakeFirst();
+  return game?.token_hash;
+};
+
+export const findGameIdOfMatch = async (matchId: string): Promise<string | undefined> => {
+  const match = await db.selectFrom('matches').where('id', '=', matchId).select('game_id').executeTakeFirst();
+  return match?.game_id;
+};
+
+// The time of a game's latest goal or match start.
+export const findLastActivity = async (gameId: string): Promise<Date | undefined> => {
+  const [matchStart, goal] = await Promise.all([
+    db
+      .selectFrom('matches')
+      .where('game_id', '=', gameId)
+      .select((eb) => eb.fn.max('start_date').as('last'))
+      .executeTakeFirst(),
+    db
+      .selectFrom('goals')
+      .innerJoin('matches', 'matches.id', 'goals.match_id')
+      .where('matches.game_id', '=', gameId)
+      .select((eb) => eb.fn.max('goals.time_stamp').as('last'))
+      .executeTakeFirst(),
+  ]);
+  const times = [matchStart?.last, goal?.last].filter((time): time is Date => time instanceof Date);
+  return times.length > 0 ? new Date(Math.max(...times.map((time) => time.getTime()))) : undefined;
+};
+
 export const deleteMatch = async (matchId: string): Promise<void> => {
   await db.deleteFrom('matches').where('id', '=', matchId).execute();
 };

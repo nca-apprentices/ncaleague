@@ -150,3 +150,18 @@ test('the navigation bar shows the build version', async ({ page }) => {
   await page.goto('/ranking');
   await expect(page.getByRole('navigation').getByText('v0.0.0-harness', { exact: true })).toBeVisible();
 });
+
+test('another browser watches a game but cannot change it', async ({ page, browser }) => {
+  const matchId = await startGame(page, ['va', 'vb', 'vc', 'vd'], '1-10');
+
+  const context = await browser.newContext({ baseURL: test.info().project.use.baseURL });
+  const viewer = await context.newPage();
+  await viewer.goto(`/matches/${matchId}`);
+  await expect(score(viewer)).toHaveText('0 : 0');
+  await expect(viewer.getByText('Only the device that started this game can change it.')).toBeVisible();
+  await expect(viewer.getByRole('button', { name: 'Undo Goal' })).toHaveCount(0);
+  await expect(viewer.getByRole('button', { name: 'Abort Game' })).toHaveCount(0);
+  await context.close();
+
+  await expect(page.getByRole('button', { name: 'Abort Game' })).toBeVisible();
+});

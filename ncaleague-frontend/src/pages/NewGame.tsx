@@ -4,6 +4,7 @@ import { Player, RunningMatch } from 'api/types/';
 import LiveMatch from 'src/components/LiveMatch';
 import NavigationBar from 'src/components/NavigationBar';
 import { Tooltip } from 'react-tooltip';
+import { saveGameToken } from 'src/gameToken';
 
 export default function NewGame(): React.JSX.Element {
   const [location, setLocation] = useState('Zurich');
@@ -173,6 +174,7 @@ export default function NewGame(): React.JSX.Element {
     if (matchRes.ok) {
       const matchData = await matchRes.json();
       const matchId = matchData.id;
+      saveGameToken(matchData.gameId, matchData.token);
 
       window.location.href = `/matches/${matchId}`;
     } else {

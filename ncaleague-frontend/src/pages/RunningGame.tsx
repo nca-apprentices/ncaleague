@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'wouter';
 import { API_URL } from 'src/App';
 import GoalBlue from 'src/assets/goal_blue.png';
 import GoalRed from 'src/assets/goal_red.png';
+import { gameTokenHeaders, hasGameToken } from 'src/gameToken';
 
 export default function RunningGame(): React.JSX.Element {
   const [players, setPlayer] = useState<Array<{ name: string; position: string }>>([]);
@@ -13,6 +14,7 @@ export default function RunningGame(): React.JSX.Element {
     totalMatches: 0,
     currentMatch: 0,
   });
+  const [gameId, setGameId] = useState<string>();
   const [, setLocation] = useLocation();
   const params = useParams();
   const matchId = params.matchId;
@@ -24,6 +26,7 @@ export default function RunningGame(): React.JSX.Element {
         if (res.ok) {
           const data = await res.json();
 
+          setGameId(data.gameId);
           setMatchInfo({ totalMatches: data.totalMatches, currentMatch: data.matchOfGame });
 
           setPlayer([
@@ -54,7 +57,7 @@ export default function RunningGame(): React.JSX.Element {
   const goalCount = async (scoringPlayer: string): Promise<void> => {
     const res = await fetch(API_URL + `/matches/${matchId}/goals`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...gameTokenHeaders(gameId!) },
       body: JSON.stringify({ scoringPlayer: scoringPlayer }),
     });
     if (res.status == 403) {
@@ -66,6 +69,7 @@ export default function RunningGame(): React.JSX.Element {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...gameTokenHeaders(data.gameId),
           },
           body: JSON.stringify({ gameId: data.gameId }),
         });
@@ -96,6 +100,7 @@ export default function RunningGame(): React.JSX.Element {
   const undoGoal = async (): Promise<void> => {
     const res = await fetch(`${API_URL}/matches/${matchId}/goals/undo`, {
       method: 'POST',
+      headers: gameTokenHeaders(gameId!),
     });
 
     if (res.status == 403) {
@@ -124,6 +129,7 @@ export default function RunningGame(): React.JSX.Element {
     if (confirmation) {
       const res = await fetch(`${API_URL}/matches/${matchId}`, {
         method: 'DELETE',
+        headers: gameTokenHeaders(gameId!),
       });
       if (res.status === 204) {
         setLocation('/');
@@ -138,6 +144,9 @@ export default function RunningGame(): React.JSX.Element {
   const getGoalCountsByPlayer = (player: { name: string; position: string }): number => {
     return playerScores.find((playerGoals) => playerGoals.player === player.name)?.goals ?? 0;
   };
+
+  // Only the browser that started the game may change it. Others watch.
+  const canChange = gameId !== undefined && hasGameToken(gameId);
 
   return (
     <div className="flex h-full justify-center p-3 md:p-6">
@@ -159,7 +168,7 @@ export default function RunningGame(): React.JSX.Element {
               className={`w-45/100 sm:w-30/100 md:w-2/10 flex h-full flex-col content-center justify-center rounded-lg py-5 ${
                 index % 2 === 0 ? 'bg-blue-500' : 'bg-red-500'
               }`}
-              onClick={() => player.name !== undefined && goalCount(player.name)}
+              onClick={() => canChange && player.name !== undefined && goalCount(player.name)}
             >
               <img
                 src="https://static.thenounproject.com/png/3270-200.png"
@@ -174,26 +183,35 @@ export default function RunningGame(): React.JSX.Element {
         <div className="flex flex-col items-center text-center">
           <img src={GoalRed} alt="GoalRed" className="mt-2 w-12 rotate-180 md:w-16 2xl:mt-5 2xl:w-24" />
           <p className="mb-2 2xl:mb-5">Goal Red</p>
-          <div className="flex items-center gap-x-2 2xl:flex-col">
-            <button
-              className="flex w-fit cursor-pointer rounded-md bg-white p-2 text-xl sm:text-2xl 2xl:text-3xl"
-              onClick={() => undoGoal()}
-            >
-              <img src="https://cdn-icons-png.flaticon.com/512/60/60690.png" alt="" className="h-6 w-6 sm:h-8 sm:w-8" />
-              <p className="ml-2">Undo Goal</p>
-            </button>
-            <button
-              className="flex w-fit cursor-pointer rounded-md bg-white p-2 text-xl sm:text-2xl 2xl:mt-2 2xl:text-3xl"
-              onClick={() => abortGame()}
-            >
-              <img
-                src="https://cdn-icons-png.flaticon.com/512/1828/1828778.png"
-                alt=""
-                className="h-6 w-6 sm:h-8 sm:w-8"
-              />
-              <p className="ml-2">Abort Game</p>
-            </button>
-          </div>
+          {gameId !== undefined && !canChange && (
+            <p className="text-xl text-white">Only the device that started this game can change it.</p>
+          )}
+          {canChange && (
+            <div className="flex items-center gap-x-2 2xl:flex-col">
+              <button
+                className="flex w-fit cursor-pointer rounded-md bg-white p-2 text-xl sm:text-2xl 2xl:text-3xl"
+                onClick={() => undoGoal()}
+              >
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/60/60690.png"
+                  alt=""
+                  className="h-6 w-6 sm:h-8 sm:w-8"
+                />
+                <p className="ml-2">Undo Goal</p>
+              </button>
+              <button
+                className="flex w-fit cursor-pointer rounded-md bg-white p-2 text-xl sm:text-2xl 2xl:mt-2 2xl:text-3xl"
+                onClick={() => abortGame()}
+              >
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/1828/1828778.png"
+                  alt=""
+                  className="h-6 w-6 sm:h-8 sm:w-8"
+                />
+                <p className="ml-2">Abort Game</p>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

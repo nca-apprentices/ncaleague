@@ -3,6 +3,7 @@ import { API_URL } from 'src/App';
 import NavigationBar from 'src/components/NavigationBar';
 import { Match, Player } from 'api/types';
 import { useParams } from 'wouter';
+import { saveGameToken } from 'src/gameToken';
 
 export default function PostGame(): React.JSX.Element {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -58,6 +59,7 @@ export default function PostGame(): React.JSX.Element {
     if (matchRes.ok) {
       const matchData = await matchRes.json();
       const matchId = matchData.id;
+      saveGameToken(matchData.gameId, matchData.token);
 
       window.location.href = `/matches/${matchId}`;
     } else {

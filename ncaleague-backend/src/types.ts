@@ -4,6 +4,7 @@ export interface Database {
   matches: MatchTable;
   players: PlayersTable;
   goals: GoalsTable;
+  games: GamesTable;
 }
 
 export interface PlayerConstellation {
@@ -31,6 +32,11 @@ export interface MatchTable {
 
 export interface PlayersTable {
   name: string;
+}
+
+export interface GamesTable {
+  id: string;
+  token_hash: string | null;
 }
 
 export interface GoalsTable {

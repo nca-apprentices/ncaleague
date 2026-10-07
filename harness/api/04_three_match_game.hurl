@@ -22,6 +22,7 @@ HTTP 201
 [Captures]
 m1: jsonpath "$.id"
 game: jsonpath "$.gameId"
+token: jsonpath "$.token"
 bo: jsonpath "$.players.blueOffensive"
 bd: jsonpath "$.players.blueDefensive"
 ro: jsonpath "$.players.redOffensive"
@@ -34,6 +35,7 @@ jsonpath "$.matchOfGame" == 1
 jsonpath "$.totalMatches" == 3
 
 POST {{base}}/api/matches/{{m1}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 4
 {"scoringPlayer": "{{bo}}"}
@@ -43,6 +45,7 @@ jsonpath "$.matchStatus" == "live"
 
 # The last goal of a match that isn't the game's last asks for a new match.
 POST {{base}}/api/matches/{{m1}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{bo}}"}
 HTTP 201
 [Asserts]
@@ -51,9 +54,14 @@ jsonpath "$.matchStatus" == "done"
 jsonpath "$.newMatch" == true
 jsonpath "$.gameId" == {{game}}
 
+POST {{base}}/api/matches
+{"gameId": "{{game}}"}
+HTTP 403
+
 # After the first match, red offense moves to blue offense, and blue moves
 # one position along.
 POST {{base}}/api/matches
+X-Game-Token: {{token}}
 {"gameId": "{{game}}"}
 HTTP 201
 [Captures]
@@ -86,6 +94,7 @@ jsonpath "$[?(@.id == '{{m2}}')].totalMatches" == 3
 
 # Undo deletes the new match, reopens the last one, and removes its last goal.
 POST {{base}}/api/matches/{{m2}}/goals/undo
+X-Game-Token: {{token}}
 HTTP 200
 [Asserts]
 jsonpath "$.id" == {{m1}}
@@ -103,6 +112,7 @@ jsonpath "$.status" == "live"
 jsonpath "$.blueScore" == 4
 
 POST {{base}}/api/matches/{{m1}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{bo}}"}
 HTTP 201
 [Asserts]
@@ -110,6 +120,7 @@ jsonpath "$.matchStatus" == "done"
 jsonpath "$.newMatch" == true
 
 POST {{base}}/api/matches
+X-Game-Token: {{token}}
 {"gameId": "{{game}}"}
 HTTP 201
 [Captures]
@@ -122,12 +133,14 @@ jsonpath "$.players.redDefensive" == {{rd}}
 
 # Red wins the second match 5:3.
 POST {{base}}/api/matches/{{m2}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 3
 {"scoringPlayer": "{{ro}}"}
 HTTP 201
 
 POST {{base}}/api/matches/{{m2}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 4
 {"scoringPlayer": "{{rd}}"}
@@ -136,6 +149,7 @@ HTTP 201
 jsonpath "$.matchStatus" == "live"
 
 POST {{base}}/api/matches/{{m2}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{rd}}"}
 HTTP 201
 [Asserts]
@@ -149,6 +163,7 @@ jsonpath "$.newMatch" == true
 
 # After the second match, everyone moves one position along.
 POST {{base}}/api/matches
+X-Game-Token: {{token}}
 {"gameId": "{{game}}"}
 HTTP 201
 [Captures]
@@ -165,6 +180,7 @@ HTTP 200
 jsonpath "$.matchOfGame" == 3
 
 POST {{base}}/api/matches/{{m3}}/goals
+X-Game-Token: {{token}}
 [Options]
 repeat: 4
 {"scoringPlayer": "{{rd}}"}
@@ -174,6 +190,7 @@ jsonpath "$.matchStatus" == "live"
 
 # The last goal of the game's last match ends the game.
 POST {{base}}/api/matches/{{m3}}/goals
+X-Game-Token: {{token}}
 {"scoringPlayer": "{{rd}}"}
 HTTP 201
 [Asserts]

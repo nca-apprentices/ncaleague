@@ -11,6 +11,12 @@ paths:
   /matches:
     post:
       summary: Create match
+      description: >-
+        A new game answers with its token, which the next match needs. The
+        next match of a game, a body with only gameId, needs the token.
+      security:
+        - {}
+        - GameToken: []
       requestBody:
         required: true
         content:
@@ -53,6 +59,9 @@ paths:
                 $ref: '#/components/schemas/Match'
     delete:
       summary: Deleta a match
+      description: Needs the game's token, unless the game had no goal or match for 60 minutes.
+      security:
+        - GameToken: []
       parameters:
         - in: path
           name: matchId
@@ -67,6 +76,8 @@ paths:
   '/matches/:id/goals':
     post:
       summary: Register goal
+      security:
+        - GameToken: []
       parameters:
         - in: path
           name: matchId
@@ -115,6 +126,8 @@ paths:
   '/matches/:id/goals/undo':
     post:
       summary: Undo goal
+      security:
+        - GameToken: []
       parameters:
         - in: path
           name: matchId
@@ -200,6 +213,13 @@ paths:
         '404':
           description: Error while fetching matches, empty body
 components:
+  securitySchemes:
+    # Creating a game answers with this token. Requests that change the game
+    # send it.
+    GameToken:
+      type: apiKey
+      in: header
+      name: X-Game-Token
   schemas:
     Player:
       type: object
