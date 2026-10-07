@@ -237,7 +237,7 @@ func TestTheLastGoalShowsTheSummary(t *testing.T) {
 	}
 	// a scored every goal, so a's team won.
 	body := s.get(c, summary).body
-	if !strings.Contains(body, "Game Over") || !strings.Contains(body, `<td class="name won">A</td>`) {
+	if !strings.Contains(body, "Game Over") || !regexp.MustCompile(`<td class="name won"[^>]*>A</td>`).MatchString(body) {
 		t.Error("the summary doesn't list the match with its winners in bold")
 	}
 	if !regexp.MustCompile(`Won by (A and [BCD]|[BCD] and A)\b`).MatchString(body) {
@@ -260,14 +260,14 @@ func TestGamesListPagesBy20(t *testing.T) {
 		s.start(c, "a, b, c, d")
 	}
 	first := s.get(c, "/games").body
-	if n := strings.Count(first, "<td>1-10</td>"); n != 20 {
+	if n := strings.Count(first, `<td data-label="Mode">1-10</td>`); n != 20 {
 		t.Errorf("page 1 lists %d matches, want 20", n)
 	}
 	if !strings.Contains(first, `<a href="?page=2">Next</a>`) || strings.Contains(first, "Previous") {
 		t.Error("page 1 doesn't link only the next page")
 	}
 	second := s.get(c, "/games?page=2").body
-	if n := strings.Count(second, "<td>1-10</td>"); n != 1 || !strings.Contains(second, `<a href="?page=1">Previous</a>`) {
+	if n := strings.Count(second, `<td data-label="Mode">1-10</td>`); n != 1 || !strings.Contains(second, `<a href="?page=1">Previous</a>`) {
 		t.Errorf("page 2 lists %d matches or misses Previous", n)
 	}
 }
