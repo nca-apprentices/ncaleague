@@ -1,9 +1,0 @@
-# TLS ends at the ingress, so Caddy serves plain HTTP. A path that isn't a file
-# is a client-side route and gets index.html. An unprivileged port lets Caddy
-# run without root or capabilities.
-:8080 {
-	root * /srv
-	encode
-	try_files {path} /index.html
-	file_server
-}

@@ -1,0 +1,43 @@
+{{define "main"}}
+  <main class="page">
+    <h1>New Game</h1>
+    <form id="new-game" class="new-game" method="post" action="/games">
+      <label for="location">Location:</label>
+      <select id="location" name="location">
+        <option value="Zurich">Zurich</option>
+        <option value="Winterthur">Winterthur</option>
+      </select>
+      <label for="mode">Game Mode:</label>
+      <select id="mode" name="gameMode">{{template "modes"}}</select>
+      <label for="names">Players:</label>
+      {{/* The pattern asks for four names, so the browser holds back a
+        form without them, and Start Game looks off until they're there. */}}
+      <input
+        id="names"
+        name="name"
+        required
+        pattern="[\s,]*[^\s,]+([\s,]+[^\s,]+){3}[\s,]*"
+        title="The short signs of four players, separated by commas"
+        autocomplete="off"
+        autocapitalize="none"
+        placeholder="Shortsign of 4 players, e.g. ab, cd, ef, gh"
+      >
+      {{/* The hints float below Start Game, over what lies beneath, so
+        nothing on the page moves while the players type. */}}
+      <div class="start-area">
+        <button class="start">Start Game</button>
+        <div class="hints" id="hints" hidden>
+          <p class="warning" id="unknown" hidden></p>
+          <p class="warning" id="duplicates" hidden></p>
+          <div class="suggestions" id="suggestions" hidden>
+            <p>Suggestions:</p>
+            <ul></ul>
+          </div>
+        </div>
+      </div>
+    </form>
+    <datalist id="players">
+      {{range .}}<option value="{{.}}"></option>{{end}}
+    </datalist>
+  </main>
+{{end}}

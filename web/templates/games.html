@@ -1,0 +1,43 @@
+{{define "main"}}
+  <main class="page">
+    <section class="sheet games">
+      <h1>Games</h1>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Start Date</th>
+              <th>Mode</th>
+              <th>Blue Offensive</th>
+              <th>Blue Defensive</th>
+              <th>Red Offensive</th>
+              <th>Red Defensive</th>
+              <th>Winning Team</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .Rows}}
+              <tr class="{{if .Shaded}}shaded{{end}}">
+                <td>{{date .Start}}</td>
+                <td>{{.Mode}}</td>
+                {{range .Players}}<td class="name">{{upper .}}</td>{{end}}
+                <td>{{template "winner" .Winner}}</td>
+              </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+      <div class="pages">
+        {{with .Prev}}<a href="?page={{.}}">Previous</a>{{end}}
+        {{range .Numbers}}
+          {{if eq . 0}}
+            <span>...</span>
+          {{else}}
+            <a href="?page={{.}}" aria-current="{{if eq . $.Page}}page{{else}}false{{end}}">{{.}}</a>
+          {{end}}
+        {{end}}
+        {{with .Next}}<a href="?page={{.}}">Next</a>{{end}}
+      </div>
+    </section>
+  </main>
+{{end}}

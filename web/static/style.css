@@ -1,0 +1,938 @@
+/* The look of the original app, which used Tailwind CSS: the same sizes,
+   colors, and breakpoints (sm 640px, md 768px, lg 1024px, 2xl 1536px),
+   written out as plain CSS. */
+
+:root {
+  --nca-blue: #7da2c3;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --goal-blue: #0071c2;
+  --goal-red: #fe0000;
+  --yellow: #eab308;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --zinc-200: #e4e4e7;
+  --slate-300: #cbd5e1;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --blue-50: #eff6ff;
+  --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --raised: 0 4px 0 rgb(0 0 0 / 0.2);
+}
+
+*,
+::before,
+::after {
+  box-sizing: border-box;
+  border: 0 solid var(--gray-200);
+}
+
+html {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  /* Pages with and without a scrollbar keep the same width, so nothing
+     shifts between them. */
+  scrollbar-gutter: stable;
+}
+
+/* Digits of one width, so scores and rates line up and a score doesn't
+   shift as it changes. */
+body {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2,
+h3,
+p,
+ul {
+  margin: 0;
+  padding: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+button,
+input,
+select {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+/* Buttons answer a tap at once, without a double-tap zoom, and sink a
+   little while pressed. */
+button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 80ms, box-shadow 80ms, filter 80ms;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(2px) scale(0.98);
+  filter: brightness(0.92);
+}
+
+svg {
+  display: block;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* The navigation bar sits at the bottom of a phone and at the top of a
+   wider screen. */
+nav {
+  position: fixed;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  border-top-width: 2px;
+  background: #fff;
+}
+
+/* The links fit a phone's width on one line each. */
+nav a {
+  display: block;
+  padding: 1rem 0.625rem;
+  white-space: nowrap;
+  border-right: 1px solid #fff;
+  color: #fff;
+  background: var(--nca-blue);
+  touch-action: manipulation;
+}
+
+nav a:hover,
+nav a:focus {
+  background: var(--slate-500);
+}
+
+nav a:active {
+  background: var(--slate-600);
+}
+
+nav a[aria-current="true"] {
+  background: var(--slate-300);
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+nav .version {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 1rem 0.625rem;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-style: italic;
+  color: var(--gray-500);
+}
+
+/* A page under the navigation bar. On a phone it leaves room for the bar
+   at the bottom. */
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0.75rem 5rem;
+}
+
+.page h1,
+.page h2 {
+  margin: 2.5rem 0;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  text-align: center;
+}
+
+/* New Game. */
+.new-game {
+  display: grid;
+  justify-items: start;
+  align-items: center;
+  gap: 1rem;
+  width: min(100%, 32rem);
+}
+
+.new-game label {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.new-game select,
+.new-game input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--nca-blue);
+  background: #fff;
+}
+
+.new-game input {
+  border-radius: 0.375rem;
+}
+
+.start-area {
+  position: relative;
+  width: 100%;
+}
+
+/* The hints float over the page below Start Game, so they push nothing
+   down as they come and go. */
+.hints {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 2;
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.warning {
+  width: fit-content;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  color: #fff;
+  background: var(--yellow);
+}
+
+.suggestions {
+  width: 100%;
+  text-align: center;
+}
+
+.suggestions p {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  color: var(--nca-blue);
+  background: var(--blue-50);
+}
+
+.suggestions li {
+  overflow: hidden;
+  padding: 0.25rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.start {
+  width: 100%;
+  height: 3rem;
+  padding: 0.5rem 2.5rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: var(--nca-blue);
+  box-shadow: var(--raised);
+}
+
+/* Start Game looks off until the players are there, from the first paint
+   on, before the script runs. */
+.new-game:has(input:invalid) .start,
+.start:disabled {
+  background: var(--gray-300);
+  box-shadow: none;
+  cursor: default;
+}
+
+/* Live: a board per running game, with the score large enough to follow
+   from across the room. */
+.boards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: 1.5rem;
+  width: min(100%, 80rem);
+}
+
+.game {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border-radius: 0.75rem;
+  color: #fff;
+  background: var(--nca-blue);
+  box-shadow: var(--shadow);
+  touch-action: manipulation;
+}
+
+.game header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-transform: uppercase;
+}
+
+.game header span:last-child {
+  margin-left: auto;
+}
+
+.on-air {
+  padding: 0 0.5rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  background: var(--red);
+}
+
+.on-air::before,
+.on-air-dot {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  vertical-align: middle;
+  animation: pulse 1.5s infinite;
+}
+
+.on-air::before {
+  margin-right: 0.375rem;
+  background: #fff;
+}
+
+.on-air-dot {
+  margin-left: 0.375rem;
+  background: var(--red);
+}
+
+.game .score {
+  font-size: 4.5rem;
+  line-height: 1;
+  text-align: center;
+}
+
+.game .score b {
+  display: inline-block;
+  min-width: 6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 400;
+  color: #000;
+}
+
+.game .blue {
+  background: var(--blue);
+}
+
+.game .red {
+  background: var(--red);
+}
+
+.teams {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.teams ul {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  color: #000;
+}
+
+.teams li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.teams li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game .last {
+  text-align: center;
+}
+
+.before {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.before .team {
+  min-width: 0;
+  padding: 0 0.5rem;
+}
+
+.quiet {
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.quiet a {
+  text-decoration: underline;
+}
+
+/* A goal lights up its game's board. */
+.scored {
+  animation: scored 1.2s ease-out;
+}
+
+@keyframes scored {
+  from {
+    box-shadow: 0 0 0 0.5rem var(--yellow);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scored,
+  .on-air::before,
+  .on-air-dot {
+    animation: none;
+  }
+}
+
+/* The scoreboard of a match, which fills the screen. */
+.board {
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  height: 100dvh;
+  padding: 0.75rem;
+}
+
+.board > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  background: var(--nca-blue);
+}
+
+.board header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.board h1 {
+  margin-bottom: 0.5rem;
+  font-size: 4.5rem;
+  line-height: 1;
+  color: #fff;
+}
+
+.board h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.board .goal {
+  width: 3rem;
+}
+
+.board .tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  text-transform: uppercase;
+}
+
+.board .tile {
+  height: 100%;
+  padding: 1.25rem 0;
+}
+
+.board .skull {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto;
+}
+
+.board .tile span {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.board .tile b {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.board footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.board footer .goal {
+  margin-top: 0.5rem;
+}
+
+.board footer > p {
+  margin-bottom: 0.5rem;
+}
+
+.viewer {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  color: #fff;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.controls button {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  background: #fff;
+  box-shadow: var(--raised);
+}
+
+.controls svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+/* A player's tile: their name and goals, in their team's color. On the
+   scoreboard of the browser that started the game, a tap scores. */
+.tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  border-radius: 0.5rem;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.tile span {
+  overflow: hidden;
+  padding: 0 0.75rem;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile b {
+  margin: 0 auto;
+  font-weight: inherit;
+}
+
+.tile.blue {
+  background: var(--blue);
+}
+
+.tile.red {
+  background: var(--red);
+}
+
+button.tile {
+  box-shadow: var(--raised);
+}
+
+.goal.blue {
+  color: var(--goal-blue);
+}
+
+.goal.red {
+  color: var(--goal-red);
+}
+
+/* Tables on a white sheet: the games, a game's summary, and the ranking. */
+.sheet {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  gap: 1rem;
+  overflow: auto;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.sheet .scroll {
+  width: 100%;
+  overflow: scroll;
+}
+
+.sheet table {
+  width: 1000px;
+  table-layout: fixed;
+  border: 1px solid var(--gray-400);
+}
+
+.sheet th,
+.sheet td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--gray-300);
+  border-right: 1px solid var(--gray-300);
+  text-align: center;
+}
+
+.sheet td.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Who won: the game's winners above the summary, their names in bold, and
+   each match's winning team in its color. */
+.winners {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+
+.winners svg {
+  width: 2rem;
+  height: 2rem;
+  color: var(--yellow);
+}
+
+.sheet td.won {
+  font-weight: 700;
+}
+
+.team {
+  display: inline-block;
+  min-width: 4rem;
+  padding: 0.125rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.team.blue {
+  background: var(--blue);
+}
+
+.team.red {
+  background: var(--red);
+}
+
+.summary tbody tr:nth-child(odd),
+.ranking tbody tr:nth-child(odd) {
+  background: var(--gray-100);
+}
+
+.games th,
+.games td {
+  border-color: var(--gray-400);
+}
+
+.games tbody tr {
+  background: var(--gray-50);
+}
+
+.games tbody tr.shaded {
+  background: var(--zinc-200);
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pages a {
+  min-width: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  text-align: center;
+  background: var(--gray-300);
+  touch-action: manipulation;
+}
+
+.pages a[aria-current="page"] {
+  color: #fff;
+  background: var(--nca-blue);
+}
+
+.pages span {
+  padding: 0 0.5rem;
+}
+
+.ranking {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.ranking .sheet {
+  display: flex;
+  width: 100%;
+}
+
+.ranking table {
+  width: 100%;
+  border-color: var(--gray-300);
+}
+
+.ranking th:nth-child(2) {
+  width: 40%;
+}
+
+.rematch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rematch label {
+  margin-top: 1.25rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.rematch select {
+  width: 8rem;
+  min-height: 2.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--nca-blue);
+  background: #fff;
+}
+
+.rematch button {
+  margin-top: 1.25rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  background: var(--nca-blue);
+  box-shadow: var(--raised);
+}
+
+.page .rematch-title {
+  margin: 1.25rem 0;
+}
+
+@media (min-width: 640px) {
+  nav {
+    position: static;
+    border-top-width: 0;
+    border-bottom-width: 2px;
+    background: var(--nca-blue);
+  }
+
+  nav a,
+  nav .version {
+    padding: 1rem;
+  }
+
+  nav .version {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: #fff;
+  }
+
+  .board .tiles {
+    gap: 1.25rem;
+  }
+
+  .board .tile span {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
+  .board .tile b {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .controls button {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .controls svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .ranking .sheet {
+    width: 60%;
+  }
+
+  .ranking th:nth-child(2) {
+    width: 60%;
+  }
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding: 2rem;
+  }
+
+  .board {
+    padding: 1.5rem;
+  }
+
+  .board .goal {
+    width: 4rem;
+  }
+
+  .board .tiles {
+    width: 700px;
+  }
+
+  .board .skull {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .sheet {
+    width: 80%;
+  }
+
+  .sheet .scroll {
+    overflow: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sheet table {
+    width: 100%;
+  }
+}
+
+@media (min-width: 1536px) {
+  .board > div {
+    padding: 2rem 0.25rem;
+  }
+
+  .board header {
+    margin-bottom: 1.25rem;
+  }
+
+  .board h1 {
+    margin-bottom: 2rem;
+    font-size: 8rem;
+  }
+
+  .board h2 {
+    margin-bottom: 0.75rem;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
+  .board .goal {
+    width: 6rem;
+  }
+
+  .board .skull {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .board .tile span {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+
+  .board .tile b {
+    font-size: 3.75rem;
+  }
+
+  .board footer .goal {
+    margin-top: 1.25rem;
+  }
+
+  .board footer > p {
+    margin-bottom: 1.25rem;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .controls button {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+}

@@ -2,58 +2,79 @@
 
 A table soccer league: players, matches, goals, and rankings.
 
-| Path                  | What it is                                     |
-| --------------------- | ---------------------------------------------- |
-| `api/openapi.yaml`    | The API, which generates the types both use    |
-| `ncaleague-backend/`  | Bun, Hono, Kysely, and dbmate on PostgreSQL     |
-| `ncaleague-frontend/` | React, Vite, and Tailwind CSS, served by Caddy |
-| `chart/`              | The Helm chart                                 |
-| `harness/`            | Tests against the running production images    |
+One Go binary renders the pages and takes the forms they post. Its only
+dependency outside the standard library is the database driver `lib/pq`,
+which has no dependencies of its own. The pages work without JavaScript, and
+a short script adds typing aids, live scores, and a confirmation.
+
+| Path             | What it is                                                  |
+| ---------------- | ----------------------------------------------------------- |
+| `cmd/ncaleague/` | The command: opens the database and serves on `:8080`       |
+| `league/`        | The league: players, games, goals, ranking, and who may act |
+| `web/`           | The pages and forms, with `templates/` and `static/`        |
+| `tests/`         | Go tests of `league` and `web` through their exported APIs  |
+| `e2e/`           | Browser tests against the running production image          |
+| `chart/`         | The Helm chart                                              |
+
+Each package keeps its insides to itself:
+
+- `league` exports `Open` and a `League` with reads (`Players`, `Live`,
+  `History`, `Match`, `Game`, `Ranking`) and actions (`Start`, `Rematch`,
+  `Score`, `Undo`, `Abort`), the `Match`, `Seat`, and `Rank` types, and the
+  errors `ErrInvalid`, `ErrForbidden`, and `ErrNotFound`. Its SQL, its
+  migrations, and its rules stay inside.
+- `web` exports `Handler`, which serves a `League`, and `Logs`, which tags
+  log lines with their request.
 
 ## Development
 
-`mise install` installs Bun, Node.js, Java for the OpenAPI generator, and Helm.
-The database runs with Docker Compose or Podman.
-
-Create `ncaleague-backend/.env`:
+`mise install` installs Go, Helm, and the test tools. Start a database with
+Podman or Docker:
 
 ```sh
-DATABASE_URL=postgres://ncaleague@localhost:5432/ncaleague?sslmode=disable
+podman run --rm -d -p 5432:5432 -e POSTGRES_USER=ncaleague -e POSTGRES_HOST_AUTH_METHOD=trust postgres:18.6
 ```
 
-Then start the backend on `localhost:3000`:
+Then serve on `localhost:8080`, which migrates the database first:
 
 ```sh
-cd ncaleague-backend
-bun install
-bun run db:up
-bun run db:migrate
-bun run dev
+env DATABASE_URL='postgres://ncaleague@localhost:5432/ncaleague?sslmode=disable' go run ./cmd/ncaleague
 ```
 
-And the frontend on `localhost:5173`:
+## Tests
+
+`go test ./...` runs the tests in `tests/`. The ones that need a database
+create a fresh one per test on the server that `TEST_DATABASE_URL` names,
+and skip without it:
 
 ```sh
-cd ncaleague-frontend
-npm install
-npm run dev
+env TEST_DATABASE_URL='postgres://ncaleague@localhost:5432/postgres?sslmode=disable' go test ./...
 ```
 
-## Harness
+They cover the league's rules (seats, rotation, ranking, undo, abort, and
+who may change a game) and every page and form over HTTP, including what
+the app refuses.
 
-`harness/run.sh` builds both production images, starts them on a fresh
-database behind a proxy that routes like the ingress, and tests them on
-`localhost:8080`:
+## Logs
 
-- `harness/api/` holds the hurl suite, which pins every route's behavior,
-  including known bugs.
-- `harness/e2e/` holds the Playwright suite, which plays games through the
-  browser.
+The app writes JSON lines to stdout. Each request logs one line, and each
+game event logs its game, match, location, mode, match number, score, and
+teams: `game started`, `goal`, `goal undone`, `match finished`, `match
+started`, and `match aborted`. Every line written while serving a request
+carries its `requestId`.
 
-The script uses Podman. Set `COMPOSE="docker compose"` to use Docker instead.
+## End-to-end tests
+
+`e2e/run.sh` builds the production image, starts it on a fresh database,
+and runs the Playwright suite against it. `game.spec.ts` plays games through
+the browser and passes against the old React app too, so it pins the
+behavior players know. `security.spec.ts` checks what the app refuses.
+
+The script uses Podman. Set `COMPOSE="docker compose"` to use Docker instead,
+and `PORT` to serve elsewhere than 8080.
 
 ## Releases
 
-Pushing a tag such as `v1.0.0` publishes both images and the chart to
+Pushing a tag such as `v1.0.0` publishes the image and the chart to
 `ghcr.io/nca-apprentices`. The [infra](https://github.com/nca-apprentices/infra)
 repository deploys a released chart version.

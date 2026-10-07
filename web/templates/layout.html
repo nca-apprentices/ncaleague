@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ncaleague</title>
+    <link rel="stylesheet" href="{{static `style.css`}}">
+    <script type="module" src="{{static `app.js`}}"></script>
+  </head>
+  <body>
+    {{template "icons"}}
+    {{block "nav" .}}
+      <nav>
+        <a href="/" aria-current="{{eq .Path `/`}}">New Game</a>
+        <a href="/live" aria-current="{{eq .Path `/live`}}">
+          Live{{if .Running}}<span class="on-air-dot" aria-hidden="true"></span>{{end}}
+        </a>
+        <a href="/ranking" aria-current="{{eq .Path `/ranking`}}">Ranking</a>
+        <a href="/games" aria-current="{{eq .Path `/games`}}">Games</a>
+        <span class="version">{{.Version}}</span>
+      </nav>
+    {{end}}
+    {{template "main" .Data}}
+  </body>
+</html>

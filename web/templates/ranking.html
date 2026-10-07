@@ -1,0 +1,27 @@
+{{define "main"}}
+  <main class="page">
+    <h1>Ranking</h1>
+    <div class="ranking">
+      <section class="sheet">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Winrate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $i, $r := .}}
+              <tr>
+                <td>{{inc $i}}</td>
+                <td class="name">{{$r.Name}}</td>
+                <td>{{$r.Winrate}}%</td>
+              </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+{{end}}

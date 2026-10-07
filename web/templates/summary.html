@@ -1,0 +1,45 @@
+{{define "main"}}
+  <main class="page">
+    <section class="sheet summary">
+      <h1>Game Over</h1>
+      {{with .Winners}}
+        <p class="winners">
+          <svg aria-hidden="true"><use href="#trophy" /></svg>
+          Won by {{range $i, $name := .}}{{if $i}} and {{end}}{{upper $name}}{{end}}
+        </p>
+      {{end}}
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Match No.</th>
+              <th>Blue Offensive</th>
+              <th>Blue Defensive</th>
+              <th>Red Offensive</th>
+              <th>Red Defensive</th>
+              <th>Winning Team</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $m := .Matches}}
+              <tr>
+                <td>{{$m.Number}}</td>
+                {{range $seat, $name := $m.Players}}
+                  <td class="name{{if won $m $seat}} won{{end}}">{{upper $name}}</td>
+                {{end}}
+                <td>{{template "winner" $m.Winner}}</td>
+              </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <h2 class="rematch-title">Rematch</h2>
+    <form class="rematch" method="post" action="/games/{{(index .Matches 0).GameID}}/rematch">
+      <label for="mode">Game Mode:</label>
+      <select id="mode" name="newGameMode">{{template "modes"}}</select>
+      <button>Rematch</button>
+    </form>
+  </main>
+{{end}}

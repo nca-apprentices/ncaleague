@@ -16,14 +16,9 @@
   },
   "packageRules": [
     {
-      "description": "mise.toml and the backend image must agree.",
-      "matchDepNames": ["bun", "oven/bun"],
-      "groupName": "Bun"
-    },
-    {
-      "description": "mise.toml and the frontend image must agree.",
-      "matchDepNames": ["node"],
-      "groupName": "Node.js"
+      "description": "mise.toml, go.mod, and the image must agree.",
+      "matchDepNames": ["go", "golang"],
+      "groupName": "Go"
     }
   ]
 }

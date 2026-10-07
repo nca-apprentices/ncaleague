@@ -1,0 +1,37 @@
+{{/* A definition holding only white space wouldn't replace the layout's
+  navigation bar, so this one holds a comment, which the page leaves out. */}}
+{{define "nav"}}<!-- The scoreboard fills the screen, without the navigation bar. -->{{end}}
+
+{{define "main"}}
+  <main class="board">
+    <div>
+      <header>
+        <h1>{{.Blue}} : {{.Red}}</h1>
+        <h2>Match {{.Number}} of {{.Total}}</h2>
+        <p>Goal Blue</p>
+        {{template "goal-blue"}}
+      </header>
+      <form class="tiles" method="post" action="/matches/{{.ID}}/goals">{{template "tiles" .}}</form>
+      <footer>
+        {{template "goal-red"}}
+        <p>Goal Red</p>
+        {{if .Owner}}
+          <div class="controls">
+            <form method="post" action="/matches/{{.ID}}/undo">
+              <button><svg aria-hidden="true"><use href="#undo" /></svg>Undo Goal</button>
+            </form>
+            <form
+              method="post"
+              action="/matches/{{.ID}}/abort"
+              data-confirm="Are you sure that you want to abort this game?"
+            >
+              <button><svg aria-hidden="true"><use href="#abort" /></svg>Abort Game</button>
+            </form>
+          </div>
+        {{else}}
+          <p class="viewer">Only the device that started this game can change it.</p>
+        {{end}}
+      </footer>
+    </div>
+  </main>
+{{end}}

@@ -1,0 +1,79 @@
+{{/* The drawings the pages use, defined once per page. */}}
+{{define "icons"}}
+  <svg width="0" height="0" aria-hidden="true">
+    <symbol id="skull" viewBox="0 0 100 100">
+      <path
+        d="M50 8C27 8 12 25 12 45c0 11 5 20 13 26v13a5 5 0 0 0 5 5h40a5 5 0 0 0 5-5V71c8-6 13-15 13-26C88 25 73 8 50 8z"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="7"
+        stroke-linejoin="round"
+      />
+      <path d="M15 33l72 15" stroke="currentColor" stroke-width="6" />
+      <ellipse cx="66" cy="48" rx="14" ry="10" fill="currentColor" />
+      <circle cx="33" cy="51" r="7" fill="currentColor" />
+      <path d="M50 58l-5 10h10z" fill="currentColor" />
+      <path d="M38 75v13M50 75v13M62 75v13" stroke="currentColor" stroke-width="5" />
+    </symbol>
+    <symbol id="goal-top" viewBox="0 0 451 145">
+      <path d="M10 9h432v127h-39V47H49v89H10z" fill="currentColor" />
+    </symbol>
+    <symbol id="goal-bottom" viewBox="0 0 451 145">
+      <path d="M10 9h39v89h354V9h39v127H10z" fill="currentColor" />
+    </symbol>
+    <symbol id="undo" viewBox="0 0 24 24">
+      <path d="M12 6a7 7 0 1 1-7 7" fill="none" stroke="currentColor" stroke-width="2.5" />
+      <path d="M12.5 1.5 6.5 6l6 4.5z" fill="currentColor" />
+    </symbol>
+    <symbol id="trophy" viewBox="0 0 24 24">
+      <path
+        d="M7 3h10v6a5 5 0 0 1-10 0zM7 5H3v2a4 4 0 0 0 4 4M17 5h4v2a4 4 0 0 1-4 4M12 14v4M8 21h8M9 18h6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linejoin="round"
+      />
+    </symbol>
+    <symbol id="abort" viewBox="0 0 24 24">
+      <path d="M4 4l16 16M20 4 4 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+    </symbol>
+  </svg>
+{{end}}
+
+{{define "goal-blue"}}
+  <svg class="goal blue" viewBox="0 0 451 145" role="img" aria-label="Goal Blue"><use href="#goal-top" /></svg>
+{{end}}
+
+{{define "goal-red"}}
+  <svg class="goal red" viewBox="0 0 451 145" role="img" aria-label="Goal Red"><use href="#goal-bottom" /></svg>
+{{end}}
+
+{{define "modes"}}
+  <option value="4-5">4 to 5</option>
+  <option value="3-5">3 to 5</option>
+  <option value="1-10">1 to 10</option>
+{{end}}
+
+{{define "winner"}}
+  {{- if eq . "blue"}}<span class="team blue">Blue</span>
+  {{- else if eq . "red"}}<span class="team red">Red</span>
+  {{- else}}Not finished{{end -}}
+{{end}}
+
+{{/* A match's four seats, as the table shows them. Each is a button that
+  scores a goal when the browser may change the running match. */}}
+{{define "tiles"}}
+  {{range .Tiles}}
+    {{if and $.Owner (not $.Done)}}
+      <button class="tile {{.Team}}" name="player" value="{{.Name}}">{{template "seat" .}}</button>
+    {{else}}
+      <div class="tile {{.Team}}">{{template "seat" .}}</div>
+    {{end}}
+  {{end}}
+{{end}}
+
+{{define "seat"}}
+  <svg class="skull" aria-hidden="true"><use href="#skull" /></svg>
+  <span>{{.Name}}</span>
+  <b>{{.Score}}</b>
+{{end}}

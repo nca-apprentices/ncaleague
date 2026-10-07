@@ -1,0 +1,40 @@
+{{define "main"}}
+  <main class="page">
+    <h1>Live Games</h1>
+    <div id="boards" class="boards">{{template "boards" .}}</div>
+  </main>
+{{end}}
+
+{{/* The running games, each a board that opens its match. The page polls
+  this part alone. */}}
+{{define "boards"}}
+  {{range .}}
+    <a class="game" href="/matches/{{.ID}}" data-id="{{.ID}}" data-score="{{.Blue}}:{{.Red}}">
+      <header>
+        <span class="on-air">Live</span>
+        <span>{{.Location}}</span>
+        <span>Match {{.Number}} of {{.Total}}</span>
+        <span>{{.Minutes}} min</span>
+      </header>
+      <p class="score"><b class="blue">{{.Blue}}</b> : <b class="red">{{.Red}}</b></p>
+      <div class="teams">
+        <ul class="blue">
+          {{range .BlueTeam}}<li><span>{{upper .Name}}</span> <b>{{.Score}}</b></li>{{end}}
+        </ul>
+        <ul class="red">
+          {{range .RedTeam}}<li><span>{{upper .Name}}</span> <b>{{.Score}}</b></li>{{end}}
+        </ul>
+      </div>
+      <p class="last">{{with .LastGoal}}Last goal: {{upper .}}{{else}}No goals yet{{end}}</p>
+      {{with .Before}}
+        <ol class="before">
+          {{range .}}
+            <li>Match {{.Number}} {{template "winner" .Winner}} {{.Blue}} : {{.Red}}</li>
+          {{end}}
+        </ol>
+      {{end}}
+    </a>
+  {{else}}
+    <p class="quiet">No games are running. <a href="/">Start one</a>.</p>
+  {{end}}
+{{end}}

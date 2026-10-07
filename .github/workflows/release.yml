@@ -12,16 +12,15 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  # One version ships everything: both images and the chart carry the tag.
+  # One version ships everything: the image and the chart carry the tag.
   #
-  # Each image builds natively on one runner per architecture and is pushed
-  # by digest only. The manifests job then puts both digests under the tag.
-  images:
+  # The image builds natively on one runner per architecture and is pushed
+  # by digest only. The manifest job then puts both digests under the tag.
+  image:
     name: Image
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        app: [backend, frontend]
         arch: [amd64, arm64]
         include:
           - arch: amd64
@@ -40,12 +39,11 @@ jobs:
         id: build
         with:
           context: .
-          file: ncaleague-${{ matrix.app }}/Dockerfile
           platforms: linux/${{ matrix.arch }}
           build-args: VERSION=${{ github.ref_name }}
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague-${{ matrix.app }}
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
-      # The digest travels to the manifests job as an empty file named after it.
+      # The digest travels to the manifest job as an empty file named after it.
       - name: Record the digest
         run: |
           mkdir -p "$RUNNER_TEMP/digests"
@@ -54,22 +52,19 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
       - uses: actions/upload-artifact@v7
         with:
-          name: digest-${{ matrix.app }}-${{ matrix.arch }}
+          name: digest-${{ matrix.arch }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
 
-  manifests:
+  manifest:
     name: Image manifest
-    needs: [images]
+    needs: [image]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        app: [backend, frontend]
     steps:
       - uses: actions/download-artifact@v8
         with:
-          pattern: digest-${{ matrix.app }}-*
+          pattern: digest-*
           path: digests
           merge-multiple: true
       - uses: docker/login-action@v4
@@ -80,7 +75,7 @@ jobs:
       - name: Tag the manifest list
         working-directory: digests
         env:
-          IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague-${{ matrix.app }}
+          IMAGE: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague
         run: |
           digests=(*)
           docker buildx imagetools create --tag "$IMAGE:$GITHUB_REF_NAME" "${digests[@]/#/$IMAGE@sha256:}"
@@ -101,7 +96,7 @@ jobs:
 
   release:
     name: GitHub release
-    needs: [manifests, chart]
+    needs: [manifest, chart]
     runs-on: ubuntu-latest
     steps:
       - uses: softprops/action-gh-release@v3

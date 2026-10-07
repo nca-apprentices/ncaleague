@@ -1,10 +1,7 @@
 [tools]
-bun = "1.4.2"
-node = "24.21.0"
-# The OpenAPI generator, which writes api/types for both apps, runs on Java.
-java = "temurin-21.0.12+101.0.LTS"
+go = "1.27.1"
 helm = "4.3.0"
-# Run harness/run.sh: Compose starts the stack through Podman or Docker, and
-# hurl tests the API.
+# Run e2e/run.sh: Compose starts the stack through Podman or Docker, and
+# Node.js runs the Playwright suite.
 docker-compose = "5.5.1"
-hurl = "8.0.1"
+node = "24.21.0"

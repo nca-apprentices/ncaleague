@@ -1,0 +1,28 @@
+# The production image on a fresh database, on localhost:8080 or PORT.
+# run.sh starts it fresh and tests it.
+
+services:
+  db:
+    image: postgres:18.6
+    # No password: the database is reachable only on the stack's network.
+    environment:
+      POSTGRES_DB: ncaleague
+      POSTGRES_USER: ncaleague
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'ncaleague']
+      interval: 1s
+      retries: 30
+
+  app:
+    build:
+      context: ..
+      args:
+        VERSION: v0.0.0-e2e
+    environment:
+      DATABASE_URL: postgres://ncaleague@db:5432/ncaleague?sslmode=disable
+    ports:
+      - ${PORT:-8080}:8080
+    depends_on:
+      db:
+        condition: service_healthy
