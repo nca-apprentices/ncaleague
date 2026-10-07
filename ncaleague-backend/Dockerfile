@@ -6,7 +6,7 @@ RUN java -jar /opt/openapi-generator/modules/openapi-generator-cli/target/openap
 
 FROM oven/bun:1.4.2-alpine
 WORKDIR /ncaleague/ncaleague-backend
-COPY ncaleague-backend/package.json ncaleague-backend/bun.lockb ./
+COPY ncaleague-backend/package.json ncaleague-backend/bun.lock ./
 RUN bun install --frozen-lockfile
 COPY ncaleague-backend/ ./
 COPY --from=models /api/types /ncaleague/api/types
