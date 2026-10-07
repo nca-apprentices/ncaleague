@@ -503,8 +503,9 @@ export const calculateWinRates = async (
   let allGoals: Goal[];
 
   if (players && players.length > 0) {
+    // A match appears once for each of its players, but counts once.
     const allPlayerMatches = await Promise.all(players.map((playerName) => getAllMatchesByPlayerNames(playerName)));
-    allMatches = allPlayerMatches.flat();
+    allMatches = [...new Map(allPlayerMatches.flat().map((match) => [match.id, match])).values()];
 
     allGoals = await getGoalsForPlayers(
       allMatches.map((match) => match.id),

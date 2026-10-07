@@ -229,16 +229,16 @@ jsonpath "$[0].location" == "Winterthur"
 jsonpath "$[0].winningTeam" == "blue"
 
 # The win rate shrinks toward the average: (wins + 20 * average) /
-# (matches + 20). Each match counts once per player in it, so four times.
-# The average is 0.5, so a win gives 14/24 and a loss 10/24.
+# (matches + 20). The average is 0.5, so a win gives 11/21 and a loss
+# 10/21.
 GET {{base}}/api/players/ranking
 HTTP 200
 [Asserts]
 jsonpath "$" count == 8
-jsonpath "$[?(@.player.name == '{{bo}}')].winrate" == 58.3
-jsonpath "$[?(@.player.name == '{{bd}}')].winrate" == 58.3
-jsonpath "$[?(@.player.name == '{{ro}}')].winrate" == 41.7
-jsonpath "$[?(@.player.name == '{{rd}}')].winrate" == 41.7
+jsonpath "$[?(@.player.name == '{{bo}}')].winrate" == 52.4
+jsonpath "$[?(@.player.name == '{{bd}}')].winrate" == 52.4
+jsonpath "$[?(@.player.name == '{{ro}}')].winrate" == 47.6
+jsonpath "$[?(@.player.name == '{{rd}}')].winrate" == 47.6
 jsonpath "$[?(@.player.name == 'alice')].winrate" == 0
-jsonpath "$[0].winrate" == 58.3
+jsonpath "$[0].winrate" == 52.4
 jsonpath "$[7].winrate" == 0
