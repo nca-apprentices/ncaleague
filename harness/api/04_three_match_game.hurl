@@ -109,7 +109,7 @@ jsonpath "$.scoreTeamRed" == 0
 jsonpath "$.players.blueOffensive.score" == 4
 
 GET {{base}}/api/matches/{{m2}}
-HTTP 500
+HTTP 404
 
 GET {{base}}/api/matches/{{m1}}
 HTTP 200

@@ -1,4 +1,5 @@
 import { db } from 'src/database';
+import { NotFoundError } from 'src/errors';
 import { sql } from 'kysely';
 import { NewGoal } from 'src/types';
 import { Goal, Match, NewMatch, Player, NewPlayer } from 'api/types';
@@ -32,7 +33,7 @@ export const findNewestMatchByGameId = async (gameId: string): Promise<Match> =>
     .orderBy('start_date', 'desc')
     .limit(1)
     .selectAll()
-    .executeTakeFirstOrThrow();
+    .executeTakeFirstOrThrow(() => new NotFoundError(`Game ${gameId} not found`));
 
   const match: Match = {
     location: dbMatch.location,
@@ -115,7 +116,11 @@ export const listOfPlayers = async (): Promise<Player[] | undefined> => {
 };
 
 export const getMatchById = async (matchId: string): Promise<Match | undefined> => {
-  const dbMatch = await db.selectFrom('matches').where('id', '=', matchId).selectAll().executeTakeFirstOrThrow();
+  const dbMatch = await db
+    .selectFrom('matches')
+    .where('id', '=', matchId)
+    .selectAll()
+    .executeTakeFirstOrThrow(() => new NotFoundError(`Match ${matchId} not found`));
 
   if (!dbMatch) throw new Error('Match does not exist');
 

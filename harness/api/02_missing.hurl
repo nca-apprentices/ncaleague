@@ -1,6 +1,6 @@
 # Requests for a match or game that doesn't exist.
 GET {{base}}/api/matches/missing
-HTTP 500
+HTTP 404
 [Asserts]
 header "X-Request-Id" exists
 
@@ -11,10 +11,10 @@ jsonpath "$" count == 0
 
 POST {{base}}/api/matches/missing/goals
 {"scoringPlayer": "alice"}
-HTTP 500
+HTTP 404
 
 POST {{base}}/api/matches/missing/goals/undo
-HTTP 500
+HTTP 404
 
 DELETE {{base}}/api/matches/missing
 HTTP 204
@@ -26,7 +26,7 @@ bytes count == 0
 
 POST {{base}}/api/matches
 {"gameId": "missing"}
-HTTP 500
+HTTP 404
 
 GET {{base}}/api/missing
 HTTP 404

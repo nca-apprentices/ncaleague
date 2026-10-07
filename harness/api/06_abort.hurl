@@ -34,7 +34,7 @@ X-Game-Token: {{token}}
 HTTP 204
 
 GET {{base}}/api/matches/{{m2}}
-HTTP 500
+HTTP 404
 
 GET {{base}}/api/matches/{{m2}}/goals
 HTTP 200

@@ -23,6 +23,7 @@ import { getGoalsByMatchId, getMatchById, getMatchesByGameIdList } from 'src/rep
 import { getMaxScoreCount } from 'src/gameUtils';
 import { mayAbortMatch, mayChangeGame, mayChangeMatch } from 'src/gameControl';
 import { logger } from 'src/logger';
+import { NotFoundError } from 'src/errors';
 
 const apiPrefix = '/api';
 const GAME_TOKEN_HEADER = 'X-Game-Token';
@@ -57,6 +58,9 @@ app.use('*', async (c, next) => {
 app.onError((error, c) => {
   if (error instanceof HTTPException) {
     return error.getResponse();
+  }
+  if (error instanceof NotFoundError) {
+    return c.body(null, 404);
   }
   logger.error({ err: error, requestId: c.get('requestId'), method: c.req.method, path: c.req.path }, 'request failed');
   return c.text('Internal Server Error', 500);
