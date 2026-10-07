@@ -85,7 +85,7 @@ test('a running game shows on the New Game page and opens from there', async ({ 
   await page.goto('/');
   const card = page.getByRole('heading', { name: 'Winterthur 1 : 0' });
   await expect(card).toBeVisible();
-  await expect(page.getByText('Match 1 of 4')).toBeVisible();
+  await expect(card.locator('..').getByText('Match 1 of 4')).toBeVisible();
 
   await card.click();
   await page.waitForURL(`/matches/${matchId}`);
