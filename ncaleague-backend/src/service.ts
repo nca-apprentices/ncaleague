@@ -20,6 +20,7 @@ import {
   getLastGoalsOfAllMatches,
   deleteAllGoalsOfMatch,
   getLastGoalOfMatch,
+  findMatchStatus,
 } from 'src/repository/GameRepository';
 
 import { PlayerConstellation } from 'src/types';
@@ -764,13 +765,20 @@ export const goToLastMatch = async (gameId: string): Promise<Match> => {
   return lastMatch;
 };
 
-export const abortGame = async (matchId: string): Promise<void> => {
+// Aborts a running match. A finished match is league history, which the
+// ranking and the games list depend on, so it stays.
+export const abortGame = async (matchId: string): Promise<'aborted' | 'finished'> => {
+  if ((await findMatchStatus(matchId)) === 'done') {
+    return 'finished';
+  }
+
   try {
     await deleteAllGoalsOfMatch(matchId);
     await deleteMatch(matchId);
   } catch (error) {
     console.error('Failed to abort game:', error);
   }
+  return 'aborted';
 };
 
 export const getMatchesOfGame = async (gameId: string): Promise<Match[]> => {

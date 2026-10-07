@@ -1,5 +1,4 @@
-# Abort deletes a match and its goals. It answers 204 for any match,
-# including a finished one.
+# Abort deletes a running match and its goals. A finished match stays.
 POST {{base}}/api/matches
 {"players": ["q1", "q2", "q3", "q4"], "location": "Zurich", "mode": "3-5"}
 HTTP 201
@@ -49,14 +48,21 @@ jsonpath "$" count == 1
 jsonpath "$[0].id" == {{m1}}
 jsonpath "$[0].status" == "done"
 
-# A finished match goes too.
 DELETE {{base}}/api/matches/{{m1}}
-HTTP 204
+HTTP 403
+
+GET {{base}}/api/matches/{{m1}}
+HTTP 200
+[Asserts]
+jsonpath "$.status" == "done"
+jsonpath "$.blueScore" == 5
 
 GET {{base}}/api/games/{{game}}/summary
-HTTP 404
+HTTP 200
+[Asserts]
+jsonpath "$" count == 1
 
 GET {{base}}/api/matches
 HTTP 200
 [Asserts]
-jsonpath "$[*].id" not contains {{m1}}
+jsonpath "$[*].id" contains {{m1}}

@@ -380,6 +380,11 @@ export const getAllGoals = async (): Promise<Goal[]> => {
   return goals;
 };
 
+export const findMatchStatus = async (matchId: string): Promise<'live' | 'done' | undefined> => {
+  const match = await db.selectFrom('matches').where('id', '=', matchId).select('status').executeTakeFirst();
+  return match?.status;
+};
+
 export const deleteMatch = async (matchId: string): Promise<void> => {
   await db.deleteFrom('matches').where('id', '=', matchId).execute();
 };

@@ -78,7 +78,9 @@ app.get(`${apiPrefix}/games/:id/summary`, async (c) => {
 app.delete(`${apiPrefix}/matches/:id`, async (c) => {
   const matchId = c.req.param('id');
   try {
-    await abortGame(matchId);
+    if ((await abortGame(matchId)) === 'finished') {
+      return c.body(null, 403);
+    }
   } catch (error) {
     return c.body(null, 500);
   }
