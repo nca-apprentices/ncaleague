@@ -18,7 +18,7 @@ The database runs with Docker Compose or Podman.
 Create `ncaleague-backend/.env`:
 
 ```sh
-DATABASE_URL=postgres://ncaleague:ncaleague@localhost:5432/ncaleague?sslmode=disable
+DATABASE_URL=postgres://ncaleague@localhost:5432/ncaleague?sslmode=disable
 ```
 
 Then start the backend on `localhost:3000`:
