@@ -7,6 +7,8 @@ on:
 permissions:
   contents: write
   packages: write
+  id-token: write
+  attestations: write
 
 env:
   REGISTRY: ghcr.io
@@ -43,6 +45,13 @@ jobs:
           build-args: VERSION=${{ github.ref_name }}
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
+      # Every artifact carries a signed provenance attestation, so
+      # `gh attestation verify` ties it to this run.
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
       # The digest travels to the manifest job as an empty file named after it.
       - name: Record the digest
         run: |
@@ -93,6 +102,9 @@ jobs:
           helm push ncaleague-"${GITHUB_REF_NAME#v}".tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: ncaleague-*.tgz
 
   release:
     name: GitHub release
