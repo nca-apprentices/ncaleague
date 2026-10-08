@@ -13,8 +13,10 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
+      # The cluster's network policy admits database clients by component.
       labels:
         {{- include "ncaleague.labels" . | nindent 8 }}
+        app.kubernetes.io/component: app
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
