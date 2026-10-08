@@ -285,10 +285,10 @@ nav .version {
 }
 
 /* Live: a board per running game, with the score large enough to follow
-   from across the room. */
+   from across the room. Two boards fit side by side on a tablet. */
 .boards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, min(100%, 24rem));
+  grid-template-columns: repeat(auto-fill, min(100%, 22rem));
   justify-content: center;
   gap: 1.5rem;
   width: min(100%, 80rem);
@@ -897,11 +897,24 @@ button.tile {
   }
 }
 
-/* A phone held sideways: the pages lose their air, New Game and the
-   rematch form go two columns, and the scoreboard puts the score to the
-   left of the tiles and the controls to their right, so nothing needs
-   scrolling. */
-@media (max-height: 500px) {
+/* The rematch form goes on one line wherever it fits, so Game Over fits
+   a tablet held sideways. */
+@media (min-width: 640px), (max-height: 500px) {
+  .rematch {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .rematch label,
+  .rematch button {
+    margin-top: 0;
+  }
+}
+
+/* A phone or a wide tablet held sideways: the pages lose their air, New
+   Game goes two columns, and the scoreboard puts the score to the left of
+   the tiles and the controls to their right, so nothing needs scrolling. */
+@media (max-height: 500px), (min-aspect-ratio: 3/2) and (max-height: 700px) {
   .page {
     padding: 0.5rem;
   }
@@ -930,16 +943,6 @@ button.tile {
   .sheet th,
   .sheet td {
     padding: 0.25rem 0.5rem;
-  }
-
-  .rematch {
-    flex-direction: row;
-    gap: 1rem;
-  }
-
-  .rematch label,
-  .rematch button {
-    margin-top: 0;
   }
 
   .board {

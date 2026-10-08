@@ -101,7 +101,11 @@ test('no page needs scrolling on any screen', async ({ page }) => {
     }
   });
 
-  const sizes = [[390, 844], [844, 390], [768, 1024], [1024, 768], [1280, 800], [1920, 1080]];
+  // Phones, tablets upright, wide, and square, a laptop, and a kiosk.
+  const sizes = [
+    [390, 844], [844, 390], [768, 1024], [1024, 768], [1024, 600], [1180, 820], [1366, 1024],
+    [800, 800], [1024, 1024], [1280, 800], [1920, 1080],
+  ];
   for (const [width, height] of sizes) {
     await page.setViewportSize({ width, height });
     for (const path of ['/', match, summary, '/games', '/ranking']) {
@@ -114,6 +118,20 @@ test('no page needs scrolling on any screen', async ({ page }) => {
       const overflow = await page.evaluate(() => document.documentElement.scrollHeight - document.documentElement.clientHeight);
       expect(overflow, `${width}x${height} ${path}`).toBe(0);
     }
+  }
+});
+
+// Other tests leave games running, so this checks the first row only.
+test('two live games fit a tablet side by side', async ({ page }) => {
+  await startGame(page, 'tla, tlb, tlc, tld');
+  await startGame(page, 'tle, tlf, tlg, tlh');
+  const tablets = [[1024, 768], [1024, 600], [1180, 820], [1366, 1024], [800, 800], [1024, 1024]];
+  for (const [width, height] of tablets) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/live');
+    const [a, b] = await page.locator('.boards a').evaluateAll((boards) => boards.map((board) => board.getBoundingClientRect()));
+    expect(b.y, `${width}x${height}`).toBe(a.y);
+    expect(Math.max(a.bottom, b.bottom), `${width}x${height}`).toBeLessThanOrEqual(height);
   }
 });
 
