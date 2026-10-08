@@ -288,7 +288,7 @@ nav .version {
    from across the room. Two boards fit side by side on a tablet. */
 .boards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, min(100%, 22rem));
+  grid-template-columns: repeat(auto-fill, min(100%, 21rem));
   justify-content: center;
   gap: 1.5rem;
   width: min(100%, 80rem);
