@@ -85,6 +85,6 @@ and `PORT` to serve elsewhere than 8080.
 
 ## Releases
 
-Pushing a tag such as `v1.0.0` publishes the image and the chart to
-`ghcr.io/nca-apprentices`. The [infra](https://github.com/nca-apprentices/infra)
+Pushing a tag such as `v1.0.0` runs CI on the tagged commit, then publishes
+the image and the chart to `ghcr.io/nca-apprentices`. The [infra](https://github.com/nca-apprentices/infra)
 repository deploys a released chart version.

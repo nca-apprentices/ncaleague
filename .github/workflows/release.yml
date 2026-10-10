@@ -4,23 +4,33 @@ on:
   push:
     tags: ["v*"]
 
-permissions:
-  contents: write
-  packages: write
-  id-token: write
-  attestations: write
+# Each job gets only the permissions it needs.
+permissions: {}
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
+  # A tag on a commit that fails CI ships nothing.
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   # One version ships everything: the image and the chart carry the tag.
   #
   # The image builds natively on one runner per architecture and is pushed
   # by digest only. The manifest job then puts both digests under the tag.
   image:
     name: Image
+    needs: [ci]
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -70,6 +80,8 @@ jobs:
     name: Image manifest
     needs: [image]
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -91,10 +103,21 @@ jobs:
 
   chart:
     name: Helm chart
+    needs: [ci]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    env:
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
     steps:
       - uses: actions/checkout@v7
-      - uses: azure/setup-helm@v5
+      # The Helm that mise.toml pins, as in CI.
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: helm
       - name: Package
         run: |
           helm registry login ${{ env.REGISTRY }} --username "$GITHUB_ACTOR" --password-stdin <<<"$GITHUB_TOKEN"
@@ -110,6 +133,8 @@ jobs:
     name: GitHub release
     needs: [manifest, chart]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: softprops/action-gh-release@v3
         with:
