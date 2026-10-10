@@ -5,9 +5,12 @@ metadata:
   labels:
     {{- include "ncaleague.labels" . | nindent 4 }}
 spec:
-  # One replica: each pod migrates the database on start.
-  replicas: 1
-  strategy: { type: Recreate }
+  # Two replicas, and a new pod serves before an old one stops, so a deploy
+  # keeps the app up. Migrations wait on an advisory lock.
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
   selector:
     matchLabels:
       app.kubernetes.io/instance: {{ .Release.Name }}
@@ -63,6 +66,13 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          # The app listens once it has migrated. The startup probe gives a
+          # long migration a minute before liveness can restart the pod.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 2
+            failureThreshold: 30
           # Ready means the database answers. Liveness stays on the port, so a
           # database outage doesn't restart the app.
           readinessProbe:
