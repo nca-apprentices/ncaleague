@@ -36,7 +36,7 @@ jobs:
     env:
       TEST_DATABASE_URL: postgres://ncaleague@localhost:5432/postgres?sslmode=disable
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: jdx/mise-action@v4
         with:
           install_args: go go:golang.org/x/vuln/cmd/govulncheck
@@ -52,7 +52,7 @@ jobs:
     name: End to end
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: jdx/mise-action@v4
         with:
           install_args: node
@@ -69,7 +69,7 @@ jobs:
     name: Chart
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: jdx/mise-action@v4
         with:
           install_args: helm
@@ -79,7 +79,7 @@ jobs:
     name: Image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/build-push-action@v7
         with:
           context: .
