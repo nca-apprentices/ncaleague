@@ -7,6 +7,12 @@
   ],
   "packageRules": [
     {
+      "description": "Everything but Go arrives as one PR per schedule window.",
+      "matchPackageNames": ["*"],
+      "groupName": "dependencies",
+      "separateMajorMinor": false
+    },
+    {
       "description": "mise.toml, go.mod, and the image must agree.",
       "matchDepNames": ["go", "golang"],
       "groupName": "Go"
