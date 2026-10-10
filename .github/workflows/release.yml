@@ -57,7 +57,7 @@ jobs:
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
       # Every artifact carries a signed provenance attestation, so
       # `gh attestation verify` ties it to this run.
-      - uses: actions/attest-build-provenance@v4
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/ncaleague
           subject-digest: ${{ steps.build.outputs.digest }}
@@ -125,7 +125,7 @@ jobs:
           helm push ncaleague-"${GITHUB_REF_NAME#v}".tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - uses: actions/attest-build-provenance@v4
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: ncaleague-*.tgz
 
