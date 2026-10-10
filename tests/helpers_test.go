@@ -30,6 +30,17 @@ func TestMain(m *testing.M) {
 // passing.
 func newLeague(t *testing.T) (*league.League, *sql.DB) {
 	t.Helper()
+	db := freshDB(t)
+	l, err := league.Open(context.Background(), db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return l, db
+}
+
+// freshDB creates an empty database and drops it when the test ends.
+func freshDB(t *testing.T) *sql.DB {
+	t.Helper()
 	server := os.Getenv("TEST_DATABASE_URL")
 	if server == "" {
 		t.Skip("TEST_DATABASE_URL names no PostgreSQL server")
@@ -59,12 +70,7 @@ func newLeague(t *testing.T) (*league.League, *sql.DB) {
 		admin.ExecContext(ctx, "DROP DATABASE "+name+" WITH (FORCE)")
 		admin.Close()
 	})
-
-	l, err := league.Open(ctx, db)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return l, db
+	return db
 }
 
 // holder is a browser that holds the token.

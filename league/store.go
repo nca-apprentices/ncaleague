@@ -272,11 +272,26 @@ func (s store) lastActivity(ctx context.Context, gameID string) (time.Time, erro
 //go:embed migrations/*.sql
 var migrations embed.FS
 
+// migrateLock is the advisory lock key that serializes migrate across pods.
+const migrateLock = 0x6e63616c // "ncal"
+
 // migrate applies the migrations the database lacks, in name order, each
 // in its own transaction. It keeps dbmate's schema_migrations table, so a
-// database dbmate migrated carries on.
+// database dbmate migrated carries on. Pods that start together each
+// migrate, so one connection holds an advisory lock throughout and the
+// others wait for it.
 func migrate(ctx context.Context, db *sql.DB) error {
-	_, err := db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS schema_migrations (version varchar(128) PRIMARY KEY)`)
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	if _, err := conn.ExecContext(ctx, `SELECT pg_advisory_lock($1)`, migrateLock); err != nil {
+		return err
+	}
+	defer conn.ExecContext(context.WithoutCancel(ctx), `SELECT pg_advisory_unlock($1)`, migrateLock)
+
+	_, err = conn.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS schema_migrations (version varchar(128) PRIMARY KEY)`)
 	if err != nil {
 		return err
 	}
@@ -286,15 +301,15 @@ func migrate(ctx context.Context, db *sql.DB) error {
 		src, _ := migrations.ReadFile(file)
 		up, _, _ := strings.Cut(string(src), "-- migrate:down")
 		version, _, _ := strings.Cut(path.Base(file), "_")
-		if err := apply(ctx, db, version, up); err != nil {
+		if err := apply(ctx, conn, version, up); err != nil {
 			return fmt.Errorf("%s: %w", file, err)
 		}
 	}
 	return nil
 }
 
-func apply(ctx context.Context, db *sql.DB, version, up string) error {
-	tx, err := db.BeginTx(ctx, nil)
+func apply(ctx context.Context, conn *sql.Conn, version, up string) error {
+	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
