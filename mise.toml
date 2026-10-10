@@ -1,5 +1,5 @@
 [tools]
-go = "1.27.1"
+go = "1.27.2"
 helm = "4.3.0"
 # Run e2e/run.sh: Compose starts the stack through Podman or Docker, and
 # Node.js runs the Playwright suite.
